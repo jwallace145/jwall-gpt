@@ -19,7 +19,6 @@ use jwall_gpt::optimizers::{Adam, Optimizer, SGD};
 fn test_xor_with_adam() {
     println!("\n🧪 Testing XOR with Adam optimizer and CrossEntropy loss");
 
-    // XOR dataset
     let inputs: Matrix = Matrix::from_vec(vec![
         vec![0.0, 0.0],
         vec![0.0, 1.0],
@@ -27,21 +26,19 @@ fn test_xor_with_adam() {
         vec![1.0, 1.0],
     ]);
 
-    // XOR outputs as class indices
     let target_indices = vec![0, 1, 1, 0];
-    let targets: Matrix = indices_to_one_hot(&target_indices, 2); // 2 classes
+    let targets: Matrix = indices_to_one_hot(&target_indices, 2);
 
-    // Create network: 2 → 8 → 2
+    // Network: 2 → 8 → 2 (sufficient for XOR)
     let mut layer1: Linear = Linear::new(2, 8);
     let mut layer2: Linear = Linear::new(8, 2);
 
-    // Loss and optimizer
     let loss_fn: CrossEntropyLoss = CrossEntropyLoss::new();
-    let mut optimizer: Adam = Adam::new(0.1);
+    let mut optimizer: Adam = Adam::new(0.01);  // ✅ Lower learning rate
 
-    // Training loop
-    let epochs = 1000;
+    let epochs = 2000;  // ✅ More epochs for reliable convergence
     let mut final_loss = 0.0;
+    let mut losses = Vec::new();
 
     for epoch in 0..epochs {
         // Forward pass
@@ -52,9 +49,10 @@ fn test_xor_with_adam() {
         // Compute loss
         let loss = loss_fn.forward(&output, &targets);
         final_loss = loss;
+        losses.push(loss);
 
-        if epoch % 100 == 0 {
-            println!("Epoch {}: Loss = {:.4}", epoch, loss);
+        if epoch % 200 == 0 {
+            println!("Epoch {}: Loss = {:.6}", epoch, loss);
         }
 
         // Backward pass
@@ -79,45 +77,47 @@ fn test_xor_with_adam() {
             ],
         );
 
-        // Zero gradients
         layer1.zero_grad();
         layer2.zero_grad();
+        
+        // ✅ Early stopping if converged
+        if loss < 0.001 {
+            println!("✅ Converged at epoch {}", epoch);
+            break;
+        }
     }
 
-    println!("✅ Final loss: {:.4}", final_loss);
+    println!("✅ Final loss: {:.6}", final_loss);
 
-    // Test predictions
+    // ✅ Test with accuracy metric
     println!("\n🔍 Testing predictions:");
     let hidden = layer1.forward(&inputs);
     let hidden_activated = relu(&hidden);
     let output = layer2.forward(&hidden_activated);
 
+    let mut correct = 0;
     for i in 0..4 {
         let input_vals = [inputs[[i, 0]], inputs[[i, 1]]];
-        let pred_class = if output[[i, 0]] > output[[i, 1]] {
-            0
-        } else {
-            1
-        };
+        let pred_class = if output[[i, 0]] > output[[i, 1]] { 0 } else { 1 };
         let target_class = target_indices[i];
-        let correct = if pred_class == target_class {
-            "✓"
-        } else {
-            "✗"
-        };
-
+        
+        if pred_class == target_class {
+            correct += 1;
+        }
+        
+        let status = if pred_class == target_class { "✓" } else { "✗" };
         println!(
             "{:?} → predicted: {}, target: {} {}",
-            input_vals, pred_class, target_class, correct
+            input_vals, pred_class, target_class, status
         );
     }
 
-    // Loss should be low if training succeeded
-    assert!(
-        final_loss < 0.3,
-        "Failed to learn XOR! Final loss: {}",
-        final_loss
-    );
+    let accuracy = correct as f32 / 4.0;
+    println!("\n📊 Accuracy: {:.1}%", accuracy * 100.0);
+
+    // ✅ Stricter assertions
+    assert!(final_loss < 0.01, "Loss too high: {}", final_loss);
+    assert_eq!(correct, 4, "Should achieve 100% accuracy on XOR! Got {}/4", correct);
 }
 
 /// Test XOR learning with MSE loss and SGD optimizer
@@ -244,6 +244,4 @@ fn test_single_training_step() {
         &mut [&mut layer.weights, &mut layer.bias],
         &[&layer.weight_grad, &layer.bias_grad],
     );
-
-    // If we get here without panicking, success!
 }
