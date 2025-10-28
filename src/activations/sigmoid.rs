@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 //! Sigmoid Activation Function
 //!
 //! The sigmoid function squashes any input value into the range (0, 1), making it
@@ -112,7 +114,7 @@ mod tests {
             let x = i as f32;
             let y = sigmoid(x);
             assert!(
-                y >= 0.0 && y <= 1.0,
+                (0.0..=1.0).contains(&y),
                 "sigmoid({}) = {} is out of range!",
                 x,
                 y

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 //! GELU (Gaussian Error Linear Unit) Activation Function
 //!
 //! GELU is the activation function used in modern transformer models including

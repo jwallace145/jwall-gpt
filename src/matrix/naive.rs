@@ -1,6 +1,102 @@
-use super::MatrixCompute;
+#![allow(dead_code)]
 
-pub type Matrix = Vec<Vec<f32>>;
+use super::MatrixCompute;
+use std::ops::{Deref, DerefMut, Index, IndexMut, Mul};
+
+// Newtype wrapper to allow implementing Index trait
+#[derive(Debug, Clone, PartialEq)]
+pub struct Matrix(Vec<Vec<f32>>);
+
+impl Matrix {
+    pub fn new(data: Vec<Vec<f32>>) -> Self {
+        Matrix(data)
+    }
+
+    pub fn inner(&self) -> &Vec<Vec<f32>> {
+        &self.0
+    }
+
+    pub fn inner_mut(&mut self) -> &mut Vec<Vec<f32>> {
+        &mut self.0
+    }
+
+    pub fn into_inner(self) -> Vec<Vec<f32>> {
+        self.0
+    }
+}
+
+// Implement Deref to allow transparent access to Vec methods
+impl Deref for Matrix {
+    type Target = Vec<Vec<f32>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Matrix {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+// Implement Index<usize> to support matrix[i] (row access)
+impl Index<usize> for Matrix {
+    type Output = Vec<f32>;
+
+    fn index(&self, idx: usize) -> &Self::Output {
+        &self.0[idx]
+    }
+}
+
+// Implement IndexMut<usize> to support matrix[i] = row syntax
+impl IndexMut<usize> for Matrix {
+    fn index_mut(&mut self, idx: usize) -> &mut Self::Output {
+        &mut self.0[idx]
+    }
+}
+
+// Implement Index trait to support matrix[[i, j]] syntax
+impl Index<[usize; 2]> for Matrix {
+    type Output = f32;
+
+    fn index(&self, idx: [usize; 2]) -> &Self::Output {
+        &self.0[idx[0]][idx[1]]
+    }
+}
+
+// Implement IndexMut trait to support matrix[[i, j]] = value syntax
+impl IndexMut<[usize; 2]> for Matrix {
+    fn index_mut(&mut self, idx: [usize; 2]) -> &mut Self::Output {
+        &mut self.0[idx[0]][idx[1]]
+    }
+}
+
+// Implement FromIterator to support collect()
+impl FromIterator<Vec<f32>> for Matrix {
+    fn from_iter<T: IntoIterator<Item = Vec<f32>>>(iter: T) -> Self {
+        Matrix::new(iter.into_iter().collect())
+    }
+}
+
+// Implement IntoIterator for &Matrix to support for loops
+impl<'a> IntoIterator for &'a Matrix {
+    type Item = &'a Vec<f32>;
+    type IntoIter = std::slice::Iter<'a, Vec<f32>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
+    }
+}
+
+// Implement Mul trait for element-wise multiplication (like ndarray does)
+impl<'b> Mul<&'b Matrix> for &Matrix {
+    type Output = Matrix;
+
+    fn mul(self, rhs: &'b Matrix) -> Self::Output {
+        Naive::mul_elementwise(self, rhs)
+    }
+}
 
 pub struct Naive;
 
@@ -32,29 +128,29 @@ impl MatrixCompute for Naive {
         // Optimized loop order: i, k, j for better cache performance
         // This accesses both a and b in row-major order
         for i in 0..rows_a {
-            for k in 0..cols_a {
+            for (k, b_row) in b.iter().enumerate() {
                 let a_ik = a[i][k]; // Cache this value
-                for j in 0..cols_b {
-                    result[i][j] += a_ik * b[k][j];
+                for (j, &b_val) in b_row.iter().enumerate() {
+                    result[i][j] += a_ik * b_val;
                 }
             }
         }
 
-        result
+        Matrix::new(result)
     }
 
     fn zeros(rows: usize, cols: usize) -> Self::Matrix {
-        vec![vec![0.0; cols]; rows]
+        Matrix::new(vec![vec![0.0; cols]; rows])
     }
 
     fn ones(rows: usize, cols: usize) -> Self::Matrix {
-        vec![vec![1.0; cols]; rows]
+        Matrix::new(vec![vec![1.0; cols]; rows])
     }
 
     fn identity(size: usize) -> Self::Matrix {
         let mut result = Self::zeros(size, size);
-        for i in 0..size {
-            result[i][i] = 1.0;
+        for (i, row) in result.iter_mut().enumerate() {
+            row[i] = 1.0;
         }
         result
     }
@@ -72,16 +168,16 @@ impl MatrixCompute for Naive {
 
         // Handle empty matrix
         if rows == 0 || cols == 0 {
-            return vec![];
+            return Matrix::new(vec![]);
         }
 
         // Create result matrix with swapped dimensions
         let mut result = Self::zeros(cols, rows);
 
         // Swap rows and columns
-        for i in 0..rows {
-            for j in 0..cols {
-                result[j][i] = m[i][j];
+        for (i, m_row) in m.iter().enumerate() {
+            for (j, result_row) in result.iter_mut().enumerate() {
+                result_row[i] = m_row[j];
             }
         }
 
@@ -153,19 +249,19 @@ pub fn shape(m: &Matrix) -> (usize, usize) {
 
 /// Create a matrix filled with zeros
 pub fn zeros(rows: usize, cols: usize) -> Matrix {
-    vec![vec![0.0; cols]; rows]
+    Matrix::new(vec![vec![0.0; cols]; rows])
 }
 
 /// Create a matrix filled with ones
 pub fn ones(rows: usize, cols: usize) -> Matrix {
-    vec![vec![1.0; cols]; rows]
+    Matrix::new(vec![vec![1.0; cols]; rows])
 }
 
 /// Create an identity matrix (ones on diagonal, zeros elsewhere)
 pub fn identity(size: usize) -> Matrix {
     let mut result = zeros(size, size);
-    for i in 0..size {
-        result[i][i] = 1.0;
+    for (i, row) in result.iter_mut().enumerate() {
+        row[i] = 1.0;
     }
     result
 }
@@ -211,8 +307,8 @@ mod tests {
 
     #[test]
     fn test_matmul_simple_2x2() {
-        let a = vec![vec![1.0, 2.0], vec![3.0, 4.0]];
-        let b = vec![vec![5.0, 6.0], vec![7.0, 8.0]];
+        let a = Matrix::new(vec![vec![1.0, 2.0], vec![3.0, 4.0]]);
+        let b = Matrix::new(vec![vec![5.0, 6.0], vec![7.0, 8.0]]);
 
         let result = Naive::matmul(&a, &b);
 
@@ -227,8 +323,8 @@ mod tests {
 
     #[test]
     fn test_matmul_single_element() {
-        let a = vec![vec![3.0]];
-        let b = vec![vec![4.0]];
+        let a = Matrix::new(vec![vec![3.0]]);
+        let b = Matrix::new(vec![vec![4.0]]);
         let result = Naive::matmul(&a, &b);
 
         assert_eq!(result[0][0], 12.0);
@@ -237,8 +333,8 @@ mod tests {
     #[test]
     fn test_matmul_non_square() {
         // (2×3) × (3×2) = (2×2)
-        let a = vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]];
-        let b = vec![vec![7.0, 8.0], vec![9.0, 10.0], vec![11.0, 12.0]];
+        let a = Matrix::new(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]]);
+        let b = Matrix::new(vec![vec![7.0, 8.0], vec![9.0, 10.0], vec![11.0, 12.0]]);
 
         let result = Naive::matmul(&a, &b);
 
@@ -251,7 +347,7 @@ mod tests {
 
     #[test]
     fn test_matmul_identity() {
-        let a = vec![vec![1.0, 2.0], vec![3.0, 4.0]];
+        let a = Matrix::new(vec![vec![1.0, 2.0], vec![3.0, 4.0]]);
         let identity = Naive::identity(2);
 
         let result = Naive::matmul(&a, &identity);
@@ -261,16 +357,16 @@ mod tests {
     #[test]
     #[should_panic(expected = "Matrix dimensions incompatible")]
     fn test_matmul_incompatible_dimensions() {
-        let a = vec![vec![1.0, 2.0]]; // 1×2
-        let b = vec![vec![3.0, 4.0]]; // 1×2 (incompatible!)
+        let a = Matrix::new(vec![vec![1.0, 2.0]]); // 1×2
+        let b = Matrix::new(vec![vec![3.0, 4.0]]); // 1×2 (incompatible!)
         Naive::matmul(&a, &b);
     }
 
     #[test]
     #[should_panic(expected = "Matrix A cannot be empty")]
     fn test_matmul_empty_a() {
-        let a: Matrix = vec![];
-        let b = vec![vec![1.0]];
+        let a = Matrix::new(vec![]);
+        let b = Matrix::new(vec![vec![1.0]]);
         Naive::matmul(&a, &b);
     }
 
@@ -316,7 +412,7 @@ mod tests {
 
     #[test]
     fn test_transpose() {
-        let m = vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]];
+        let m = Matrix::new(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]]);
 
         let mt = Naive::transpose(&m);
 
@@ -331,8 +427,8 @@ mod tests {
 
     #[test]
     fn test_add() {
-        let a = vec![vec![1.0, 2.0], vec![3.0, 4.0]];
-        let b = vec![vec![5.0, 6.0], vec![7.0, 8.0]];
+        let a = Matrix::new(vec![vec![1.0, 2.0], vec![3.0, 4.0]]);
+        let b = Matrix::new(vec![vec![5.0, 6.0], vec![7.0, 8.0]]);
 
         let c = Naive::add(&a, &b);
 
@@ -344,8 +440,8 @@ mod tests {
 
     #[test]
     fn test_mul_elementwise() {
-        let a = vec![vec![1.0, 2.0], vec![3.0, 4.0]];
-        let b = vec![vec![5.0, 6.0], vec![7.0, 8.0]];
+        let a = Matrix::new(vec![vec![1.0, 2.0], vec![3.0, 4.0]]);
+        let b = Matrix::new(vec![vec![5.0, 6.0], vec![7.0, 8.0]]);
 
         let c = Naive::mul_elementwise(&a, &b);
 
@@ -362,13 +458,13 @@ mod tests {
         Naive::set(&mut m, 0, 1, 42.0);
         assert_eq!(Naive::get(&m, 0, 1), 42.0);
 
-        Naive::set(&mut m, 1, 0, 3.14);
-        assert_eq!(Naive::get(&m, 1, 0), 3.14);
+        Naive::set(&mut m, 1, 0, std::f32::consts::PI);
+        assert_eq!(Naive::get(&m, 1, 0), std::f32::consts::PI);
     }
 
     #[test]
     fn test_shape_empty() {
-        let m: Matrix = vec![];
+        let m = Matrix::new(vec![]);
         assert_eq!(Naive::shape(&m), (0, 0));
     }
 }

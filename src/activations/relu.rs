@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 //! ReLU (Rectified Linear Unit) Activation Function
 //!
 //! ReLU is one of the most widely used activation functions in deep learning.

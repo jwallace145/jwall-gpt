@@ -1,3 +1,5 @@
+#![allow(dead_code, unused_imports)]
+
 pub mod naive;
 
 #[cfg(feature = "blas")]
@@ -170,16 +172,17 @@ impl MatrixExt for Matrix {
 #[cfg(not(feature = "blas"))]
 impl MatrixExt for Matrix {
     fn from_vec(data: Vec<Vec<f32>>) -> Self {
-        data
+        naive::Matrix::new(data)
     }
 
     fn random(rows: usize, cols: usize, scale: f32) -> Self {
         use rand::Rng;
         let mut rng = rand::thread_rng();
         let range = scale * 3f32.sqrt();
-        (0..rows)
+        let data = (0..rows)
             .map(|_| (0..cols).map(|_| rng.gen_range(-range..range)).collect())
-            .collect()
+            .collect();
+        naive::Matrix::new(data)
     }
 
     fn matmul(&self, other: &Self) -> Self {
@@ -206,16 +209,18 @@ impl MatrixExt for Matrix {
         if axis == 0 {
             let cols = if self.is_empty() { 0 } else { self[0].len() };
             let mut result = vec![0.0; cols];
-            for row in self {
+            for row in self.iter() {
                 for j in 0..cols {
                     result[j] += row[j];
                 }
             }
-            vec![result]
+            naive::Matrix::new(vec![result])
         } else {
-            self.iter()
+            let data = self
+                .iter()
                 .map(|row| vec![row.iter().sum::<f32>()])
-                .collect()
+                .collect();
+            naive::Matrix::new(data)
         }
     }
 
@@ -244,7 +249,7 @@ impl MatrixExt for Matrix {
     }
 
     fn is_empty_matrix(&self) -> bool {
-        Vec::is_empty(self)
+        self.is_empty()
     }
 }
 

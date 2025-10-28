@@ -47,15 +47,12 @@ use crate::matrix::{Matrix, MatrixExt, zeros_matrix};
 ///
 /// let loss = loss_fn.forward(&logits, &targets);
 /// ```
-pub struct CrossEntropyLoss {
-    /// Small constant for numerical stability
-    epsilon: f32,
-}
+pub struct CrossEntropyLoss {}
 
 impl CrossEntropyLoss {
     /// Create a new cross-entropy loss function
     pub fn new() -> Self {
-        Self { epsilon: 1e-8 }
+        Self {}
     }
 
     /// Compute softmax with numerical stability (log-sum-exp trick)
@@ -109,7 +106,7 @@ impl CrossEntropyLoss {
             }
 
             // Compute log-sum-exp
-            let mut sum_exp = 0.0;
+            let mut sum_exp: f32 = 0.0;
             for j in 0..num_classes {
                 sum_exp += (logits[[i, j]] - max_logit).exp();
             }

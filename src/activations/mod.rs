@@ -1,3 +1,5 @@
+#![allow(dead_code, unused_imports)]
+
 //! Activation Functions for Neural Networks
 //!
 //! This module implements common activation functions used in deep learning,

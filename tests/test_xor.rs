@@ -34,9 +34,9 @@ fn test_xor_with_adam() {
     let mut layer2: Linear = Linear::new(8, 2);
 
     let loss_fn: CrossEntropyLoss = CrossEntropyLoss::new();
-    let mut optimizer: Adam = Adam::new(0.01);  // ✅ Lower learning rate
+    let mut optimizer: Adam = Adam::new(0.01); // ✅ Lower learning rate
 
-    let epochs = 2000;  // ✅ More epochs for reliable convergence
+    let epochs = 2000; // ✅ More epochs for reliable convergence
     let mut final_loss = 0.0;
     let mut losses = Vec::new();
 
@@ -79,7 +79,7 @@ fn test_xor_with_adam() {
 
         layer1.zero_grad();
         layer2.zero_grad();
-        
+
         // ✅ Early stopping if converged
         if loss < 0.001 {
             println!("✅ Converged at epoch {}", epoch);
@@ -98,14 +98,22 @@ fn test_xor_with_adam() {
     let mut correct = 0;
     for i in 0..4 {
         let input_vals = [inputs[[i, 0]], inputs[[i, 1]]];
-        let pred_class = if output[[i, 0]] > output[[i, 1]] { 0 } else { 1 };
+        let pred_class = if output[[i, 0]] > output[[i, 1]] {
+            0
+        } else {
+            1
+        };
         let target_class = target_indices[i];
-        
+
         if pred_class == target_class {
             correct += 1;
         }
-        
-        let status = if pred_class == target_class { "✓" } else { "✗" };
+
+        let status = if pred_class == target_class {
+            "✓"
+        } else {
+            "✗"
+        };
         println!(
             "{:?} → predicted: {}, target: {} {}",
             input_vals, pred_class, target_class, status
@@ -117,7 +125,11 @@ fn test_xor_with_adam() {
 
     // ✅ Stricter assertions
     assert!(final_loss < 0.01, "Loss too high: {}", final_loss);
-    assert_eq!(correct, 4, "Should achieve 100% accuracy on XOR! Got {}/4", correct);
+    assert_eq!(
+        correct, 4,
+        "Should achieve 100% accuracy on XOR! Got {}/4",
+        correct
+    );
 }
 
 /// Test XOR learning with MSE loss and SGD optimizer

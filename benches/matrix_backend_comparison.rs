@@ -47,8 +47,8 @@
 //! These improvements are critical for training and inference in GPT models,
 //! where matrix operations dominate computational time.
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use jwall_gpt::matrix::{naive::Naive, MatrixCompute};
+use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
+use jwall_gpt::matrix::{MatrixCompute, naive::Naive};
 
 #[cfg(feature = "blas")]
 use jwall_gpt::matrix::blas::Blas;
@@ -116,16 +116,12 @@ fn benchmark_matmul(c: &mut Criterion) {
         let a_naive = create_test_matrix_naive(size);
         let b_naive = create_test_matrix_naive(size);
 
-        group.bench_with_input(
-            BenchmarkId::new("naive", size),
-            &size,
-            |bencher, _| {
-                bencher.iter(|| {
-                    let result = Naive::matmul(black_box(&a_naive), black_box(&b_naive));
-                    black_box(result);
-                });
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("naive", size), &size, |bencher, _| {
+            bencher.iter(|| {
+                let result = Naive::matmul(black_box(&a_naive), black_box(&b_naive));
+                black_box(result);
+            });
+        });
 
         // Benchmark BLAS implementation (if available)
         #[cfg(feature = "blas")]
@@ -133,16 +129,12 @@ fn benchmark_matmul(c: &mut Criterion) {
             let a_blas = create_test_matrix_blas(size);
             let b_blas = create_test_matrix_blas(size);
 
-            group.bench_with_input(
-                BenchmarkId::new("blas", size),
-                &size,
-                |bencher, _| {
-                    bencher.iter(|| {
-                        let result = Blas::matmul(black_box(&a_blas), black_box(&b_blas));
-                        black_box(result);
-                    });
-                },
-            );
+            group.bench_with_input(BenchmarkId::new("blas", size), &size, |bencher, _| {
+                bencher.iter(|| {
+                    let result = Blas::matmul(black_box(&a_blas), black_box(&b_blas));
+                    black_box(result);
+                });
+            });
         }
     }
 
@@ -168,32 +160,24 @@ fn benchmark_transpose(c: &mut Criterion) {
         // Benchmark Naive implementation
         let matrix_naive = create_test_matrix_naive(size);
 
-        group.bench_with_input(
-            BenchmarkId::new("naive", size),
-            &size,
-            |bencher, _| {
-                bencher.iter(|| {
-                    let result = Naive::transpose(black_box(&matrix_naive));
-                    black_box(result);
-                });
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("naive", size), &size, |bencher, _| {
+            bencher.iter(|| {
+                let result = Naive::transpose(black_box(&matrix_naive));
+                black_box(result);
+            });
+        });
 
         // Benchmark BLAS implementation (if available)
         #[cfg(feature = "blas")]
         {
             let matrix_blas = create_test_matrix_blas(size);
 
-            group.bench_with_input(
-                BenchmarkId::new("blas", size),
-                &size,
-                |bencher, _| {
-                    bencher.iter(|| {
-                        let result = Blas::transpose(black_box(&matrix_blas));
-                        black_box(result);
-                    });
-                },
-            );
+            group.bench_with_input(BenchmarkId::new("blas", size), &size, |bencher, _| {
+                bencher.iter(|| {
+                    let result = Blas::transpose(black_box(&matrix_blas));
+                    black_box(result);
+                });
+            });
         }
     }
 
@@ -220,16 +204,12 @@ fn benchmark_add(c: &mut Criterion) {
         let a_naive = create_test_matrix_naive(size);
         let b_naive = create_test_matrix_naive(size);
 
-        group.bench_with_input(
-            BenchmarkId::new("naive", size),
-            &size,
-            |bencher, _| {
-                bencher.iter(|| {
-                    let result = Naive::add(black_box(&a_naive), black_box(&b_naive));
-                    black_box(result);
-                });
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("naive", size), &size, |bencher, _| {
+            bencher.iter(|| {
+                let result = Naive::add(black_box(&a_naive), black_box(&b_naive));
+                black_box(result);
+            });
+        });
 
         // Benchmark BLAS implementation (if available)
         #[cfg(feature = "blas")]
@@ -237,16 +217,12 @@ fn benchmark_add(c: &mut Criterion) {
             let a_blas = create_test_matrix_blas(size);
             let b_blas = create_test_matrix_blas(size);
 
-            group.bench_with_input(
-                BenchmarkId::new("blas", size),
-                &size,
-                |bencher, _| {
-                    bencher.iter(|| {
-                        let result = Blas::add(black_box(&a_blas), black_box(&b_blas));
-                        black_box(result);
-                    });
-                },
-            );
+            group.bench_with_input(BenchmarkId::new("blas", size), &size, |bencher, _| {
+                bencher.iter(|| {
+                    let result = Blas::add(black_box(&a_blas), black_box(&b_blas));
+                    black_box(result);
+                });
+            });
         }
     }
 
@@ -273,16 +249,12 @@ fn benchmark_mul_elementwise(c: &mut Criterion) {
         let a_naive = create_test_matrix_naive(size);
         let b_naive = create_test_matrix_naive(size);
 
-        group.bench_with_input(
-            BenchmarkId::new("naive", size),
-            &size,
-            |bencher, _| {
-                bencher.iter(|| {
-                    let result = Naive::mul_elementwise(black_box(&a_naive), black_box(&b_naive));
-                    black_box(result);
-                });
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("naive", size), &size, |bencher, _| {
+            bencher.iter(|| {
+                let result = Naive::mul_elementwise(black_box(&a_naive), black_box(&b_naive));
+                black_box(result);
+            });
+        });
 
         // Benchmark BLAS implementation (if available)
         #[cfg(feature = "blas")]
@@ -290,17 +262,12 @@ fn benchmark_mul_elementwise(c: &mut Criterion) {
             let a_blas = create_test_matrix_blas(size);
             let b_blas = create_test_matrix_blas(size);
 
-            group.bench_with_input(
-                BenchmarkId::new("blas", size),
-                &size,
-                |bencher, _| {
-                    bencher.iter(|| {
-                        let result =
-                            Blas::mul_elementwise(black_box(&a_blas), black_box(&b_blas));
-                        black_box(result);
-                    });
-                },
-            );
+            group.bench_with_input(BenchmarkId::new("blas", size), &size, |bencher, _| {
+                bencher.iter(|| {
+                    let result = Blas::mul_elementwise(black_box(&a_blas), black_box(&b_blas));
+                    black_box(result);
+                });
+            });
         }
     }
 

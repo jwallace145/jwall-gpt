@@ -225,6 +225,6 @@ mod tests {
 
         // Standard deviation (sqrt of variance) would be used for normalization
         let std_dev = var.sqrt();
-        assert_float_eq(std_dev, 0.7071, 0.001); // sqrt(0.5) ≈ 0.707
+        assert_float_eq(std_dev, std::f32::consts::FRAC_1_SQRT_2, 0.001); // sqrt(0.5) ≈ 0.707
     }
 }
