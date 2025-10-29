@@ -51,12 +51,26 @@ pub struct MnistDataset {
 impl MnistDataset {
     /// Create a new MNIST dataset instance
     ///
-    /// This will download the MNIST dataset if it's not already cached locally.
-    /// The dataset will be downloaded to the current directory's `data/` folder.
+    /// This loads the MNIST dataset from the `data/` directory. If the files don't exist,
+    /// you'll need to download them manually as the mnist crate's automatic download
+    /// uses outdated URLs.
+    ///
+    /// # Manual Download (if needed)
+    ///
+    /// If you get a "Unable to find path to images" error, download the files manually:
+    ///
+    /// ```bash
+    /// mkdir -p data && cd data
+    /// curl -O https://storage.googleapis.com/cvdf-datasets/mnist/train-images-idx3-ubyte.gz
+    /// curl -O https://storage.googleapis.com/cvdf-datasets/mnist/train-labels-idx1-ubyte.gz
+    /// curl -O https://storage.googleapis.com/cvdf-datasets/mnist/t10k-images-idx3-ubyte.gz
+    /// curl -O https://storage.googleapis.com/cvdf-datasets/mnist/t10k-labels-idx1-ubyte.gz
+    /// gunzip *.gz
+    /// ```
     ///
     /// # Errors
     ///
-    /// Returns an error if the dataset cannot be loaded (e.g., network issues,
+    /// Returns an error if the dataset cannot be loaded (e.g., files not found,
     /// disk space problems, or corrupted files).
     ///
     /// # Examples
@@ -67,8 +81,45 @@ impl MnistDataset {
     /// let mnist = MnistDataset::new().expect("Failed to load MNIST");
     /// ```
     pub fn new() -> io::Result<Self> {
+        // Create data directory if it doesn't exist
+        std::fs::create_dir_all("data")?;
+
+        // Check if MNIST files exist, provide helpful error if not
+        let required_files = [
+            "data/train-images-idx3-ubyte",
+            "data/train-labels-idx1-ubyte",
+            "data/t10k-images-idx3-ubyte",
+            "data/t10k-labels-idx1-ubyte",
+        ];
+
+        let missing_files: Vec<&str> = required_files
+            .iter()
+            .filter(|f| !std::path::Path::new(f).exists())
+            .copied()
+            .collect();
+
+        if !missing_files.is_empty() {
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                format!(
+                    "MNIST dataset files not found: {:?}\n\
+                    Please download them manually from:\n\
+                    https://storage.googleapis.com/cvdf-datasets/mnist/\n\
+                    \n\
+                    Quick download commands:\n\
+                    mkdir -p data && cd data && \\\n\
+                    curl -O https://storage.googleapis.com/cvdf-datasets/mnist/train-images-idx3-ubyte.gz && \\\n\
+                    curl -O https://storage.googleapis.com/cvdf-datasets/mnist/train-labels-idx1-ubyte.gz && \\\n\
+                    curl -O https://storage.googleapis.com/cvdf-datasets/mnist/t10k-images-idx3-ubyte.gz && \\\n\
+                    curl -O https://storage.googleapis.com/cvdf-datasets/mnist/t10k-labels-idx1-ubyte.gz && \\\n\
+                    gunzip *.gz",
+                    missing_files
+                ),
+            ));
+        }
+
         // Load MNIST dataset using the mnist crate
-        // This will automatically download the dataset if not present
+        // Files must already exist in the data/ directory
         let mnist::Mnist {
             trn_img,
             trn_lbl,
@@ -80,7 +131,7 @@ impl MnistDataset {
             .training_set_length(60_000)
             .validation_set_length(0)
             .test_set_length(10_000)
-            .download_and_extract()
+            .base_path("data")
             .finalize();
 
         // Normalize images to [0, 1]

@@ -137,7 +137,21 @@ The MNIST dataset contains:
 - **28×28** pixel grayscale images (flattened to 784 features)
 - **10 classes** (digits 0-9)
 
-First time you use MNIST, it will download ~10MB of data to a `data/` directory in your project.
+### Downloading MNIST
+
+**Note:** The mnist crate's automatic download uses outdated URLs. You need to download the files manually:
+
+```bash
+mkdir -p data && cd data
+curl -O https://storage.googleapis.com/cvdf-datasets/mnist/train-images-idx3-ubyte.gz
+curl -O https://storage.googleapis.com/cvdf-datasets/mnist/train-labels-idx1-ubyte.gz
+curl -O https://storage.googleapis.com/cvdf-datasets/mnist/t10k-images-idx3-ubyte.gz
+curl -O https://storage.googleapis.com/cvdf-datasets/mnist/t10k-labels-idx1-ubyte.gz
+gunzip *.gz
+cd ..
+```
+
+The files will be downloaded to the `data/` directory in your project (~53MB total).
 
 ## Performance Tips
 
