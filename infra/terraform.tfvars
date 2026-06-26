@@ -1,6 +1,3 @@
-# Copy to terraform.tfvars and customize before applying.
-# Do not commit terraform.tfvars if it contains sensitive values.
-
 aws_region         = "us-east-1"
 project_name       = "jwall-gpt"
 github_org         = "jwallace145"
@@ -16,9 +13,6 @@ root_volume_size_gb  = 100
 use_spot_instances   = true
 spot_max_price       = "" # e.g. "0.25" to cap spot price
 # ami_id             = "" # optional AMI override
-
-# Set true only on a fresh AWS account with no GitHub OIDC provider yet
-create_github_oidc_provider = false
 
 tags = {
   Owner = "james-wallace"

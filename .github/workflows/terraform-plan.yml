@@ -54,7 +54,7 @@ jobs:
         id: plan
         run: |
           set -o pipefail
-          terraform plan -no-color -input=false -var-file=terraform.tfvars.example -out=tfplan 2>&1 | tee plan.txt
+          terraform plan -no-color -input=false -var-file=terraform.tfvars -out=tfplan 2>&1 | tee plan.txt
 
       - name: Render plan for PR comment
         if: always()

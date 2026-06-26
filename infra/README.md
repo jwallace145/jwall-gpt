@@ -43,10 +43,7 @@ Terraform writes AWS resource IDs to **SSM Parameter Store** under `/${project_n
 
 ### 1. Configure variables
 
-```bash
-cp terraform.tfvars.example terraform.tfvars
-# Edit github_org, instance_type, use_private_subnet, etc.
-```
+Edit [`terraform.tfvars`](terraform.tfvars) (committed) or copy from [`terraform.tfvars.example`](terraform.tfvars.example) if starting fresh.
 
 ### 2. Initial apply (local credentials)
 
@@ -67,8 +64,9 @@ Note the outputs:
 
 ### 3. Enable remote state
 
+[`backend.tf`](backend.tf) is committed with the S3 backend config. If migrating from local state for the first time:
+
 ```bash
-cp backend.tf.example backend.tf
 terraform init -migrate-state
 ```
 
