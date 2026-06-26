@@ -90,9 +90,22 @@ After this, pull requests that touch `infra/**` will run `terraform plan` and po
 
 ## Launch a training run
 
+### One-time: create the `training` environment
+
+1. Open **Settings → Environments → New environment**
+2. Name it **`training`** (must match the workflow)
+3. Enable **Required reviewers** and add yourself
+4. Save
+
+The `launch-trainer` job waits for approval before assuming AWS credentials or starting EC2.
+
+### Run training
+
 1. Open **Actions → Train → Run workflow**
-2. Leave **release_tag** empty to use the latest GitHub Release (default)
-3. Optionally set `training_config` (default `configs/tiny.py`)
+2. Review the **prepare** job summary (release tag and config)
+3. Approve the pending **training** environment deployment
+4. Leave **release_tag** empty to use the latest GitHub Release (default)
+5. Optionally set `training_config` (default `configs/tiny.py`)
 
 The workflow launches a spot GPU worker that clones the release, trains, uploads checkpoints to S3, and shuts down.
 
@@ -117,6 +130,7 @@ Checkpoints path: `s3://<training-bucket>/checkpoints/<tag>/`
 ## Security
 
 - GitHub Actions assumes an IAM role via OIDC (no long-lived AWS keys in GitHub)
+- The **Train** workflow requires manual approval via the **`training`** environment before any AWS spend
 - Trainer instances use a dedicated instance profile (S3 + CloudWatch only)
 - State and training buckets block public access and use SSE-S3
 

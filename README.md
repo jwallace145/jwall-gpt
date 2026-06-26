@@ -32,7 +32,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for commit conventions, quality gates, an
 
 ## AWS training pipeline
 
-GPU training workers are provisioned with Terraform under [`infra/`](infra/). Launch a run from **Actions → Train** (defaults to the latest release tag).
+GPU training workers are provisioned with Terraform under [`infra/`](infra/). Launch a run from **Actions → Train** (requires **`training` environment approval** before AWS spend).
 
 See [infra/README.md](infra/README.md) for bootstrap, OIDC setup, and `terraform.tfvars` options.
 

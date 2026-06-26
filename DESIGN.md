@@ -47,4 +47,4 @@ Terraform in [`infra/`](../infra/) provisions:
 GitHub workflows:
 
 - **Terraform Plan** — posts `terraform plan` on PRs touching `infra/`
-- **Train** — `workflow_dispatch` to launch a worker for the latest (or specified) release tag
+- **Train** — `workflow_dispatch` to launch a worker; requires **`training` environment approval** before AWS resources are created
