@@ -9,6 +9,14 @@ This file is maintained by [python-semantic-release](https://python-semantic-rel
 
 <!-- version list -->
 
+## v0.2.0 (2026-06-26)
+
+### Features
+
+- Add AWS training pipeline and enforce single-line commits
+  ([`0e805d0`](https://github.com/jwallace145/jwall-gpt/commit/0e805d0fbeb33dfc8ecb6f927e9b280935a77ce1))
+
+
 ## v0.1.1 (2026-06-26)
 
 ### Bug Fixes
