@@ -34,4 +34,17 @@ Decoder-only transformer (GPT-2 style):
 
 Tiny (~10M) → Nano (~25–50M) → Small (~124M) → beyond as hardware and budget allow.
 
-Cloud training infrastructure is deferred; Phase 1 runs locally on CPU, MPS, or CUDA.
+## AWS training
+
+Terraform in [`infra/`](../infra/) provisions:
+
+- VPC (public or private subnet for trainers)
+- S3 buckets (training data, checkpoints, Terraform state with S3 lockfiles)
+- GPU trainer launch template (configurable instance type, Spot)
+- GitHub OIDC IAM role for Actions
+- SSM Parameter Store entries for runtime IDs (not committed to git)
+
+GitHub workflows:
+
+- **Terraform Plan** — posts `terraform plan` on PRs touching `infra/`
+- **Train** — `workflow_dispatch` to launch a worker for the latest (or specified) release tag

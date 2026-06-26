@@ -31,6 +31,7 @@ uv run pre-commit install --hook-type commit-msg
 - File hygiene (trailing whitespace, EOF, YAML/TOML validity, merge conflicts, private keys)
 - `ruff format` and safe `ruff check --fix` on staged Python
 - Conventional commit message validation via Commitizen
+- **Single-line subject only** — no commit body; use the PR description for context
 
 ### Tier 2 — every push (mirrors CI)
 
@@ -53,6 +54,8 @@ Pull requests and pushes to `main` run the same checks as Tier 2 in `.github/wor
 ## Conventional Commits
 
 Use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages and PR titles (squash merge uses the PR title).
+
+**Keep each commit to one line** — subject only, no body. The git log should stay scannable; put design notes and rationale in the PR description.
 
 | Prefix | Release impact | Example |
 |--------|----------------|---------|
@@ -77,6 +80,17 @@ docs: expand training loop README section
 3. Open a PR with a conventional commit title
 4. Wait for CI to pass
 5. Squash merge to `main`
+
+Pull requests that change `infra/**` also trigger a **Terraform Plan** workflow that comments the plan on the PR. Review infrastructure changes before merging.
+
+## AWS infrastructure
+
+Terraform lives in [`infra/`](../infra/). See [`infra/README.md`](../infra/README.md) for bootstrap and repository variable setup.
+
+- Use `terraform.tfvars` locally (never commit secrets; `terraform.tfvars` is gitignored)
+- Prefer changing trainer sizing via `instance_type`, `use_spot_instances`, and related variables in `terraform.tfvars`
+- GitHub Actions uses OIDC (`AWS_ROLE_ARN`) — do not add long-lived AWS access keys to the repository
+- AWS resource IDs are stored in SSM Parameter Store after `terraform apply`, not in the repo
 
 ## Releases
 

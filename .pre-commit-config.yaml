@@ -39,6 +39,11 @@ repos:
 
   - repo: local
     hooks:
+      - id: single-line-commit
+        name: single-line commit message
+        entry: scripts/git/check-single-line-commit.sh
+        language: script
+        stages: [commit-msg]
       - id: uv-lock-check
         name: uv lock --check
         entry: uv lock --check

@@ -1,0 +1,93 @@
+name: Train
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Git tag to train (leave empty for latest release)"
+        required: false
+        type: string
+      training_config:
+        description: "Training config path"
+        required: false
+        default: "configs/tiny.py"
+        type: string
+      max_steps:
+        description: "Optional max training steps override (reserved)"
+        required: false
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  launch-trainer:
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_NAME: jwall-gpt
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve release tag
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -n "${{ inputs.release_tag }}" ]; then
+            TAG="${{ inputs.release_tag }}"
+          else
+            TAG="$(gh release view --repo "${GITHUB_REPOSITORY}" --json tagName -q .tagName)"
+          fi
+          echo "tag=${TAG}" >> "${GITHUB_OUTPUT}"
+          echo "Training release: ${TAG}"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Load infrastructure parameters from SSM
+        id: infra
+        run: |
+          PROJECT="${PROJECT_NAME}"
+          echo "launch_template_id=$(aws ssm get-parameter --name "/${PROJECT}/launch-template-id" --query 'Parameter.Value' --output text)" >> "${GITHUB_OUTPUT}"
+          echo "subnet_id=$(aws ssm get-parameter --name "/${PROJECT}/trainer-subnet-id" --query 'Parameter.Value' --output text)" >> "${GITHUB_OUTPUT}"
+          echo "instance_profile=$(aws ssm get-parameter --name "/${PROJECT}/trainer-instance-profile" --query 'Parameter.Value' --output text)" >> "${GITHUB_OUTPUT}"
+          echo "assign_public_ip=$(aws ssm get-parameter --name "/${PROJECT}/trainer-assign-public-ip" --query 'Parameter.Value' --output text)" >> "${GITHUB_OUTPUT}"
+          echo "training_bucket=$(aws ssm get-parameter --name "/${PROJECT}/training-bucket" --query 'Parameter.Value' --output text)" >> "${GITHUB_OUTPUT}"
+
+      - name: Install gettext
+        run: sudo apt-get update && sudo apt-get install -y gettext-base
+
+      - name: Launch training worker
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          TRAINING_CONFIG: ${{ inputs.training_config }}
+          TRAINING_BUCKET: ${{ steps.infra.outputs.training_bucket }}
+          GITHUB_REPO: ${{ github.repository }}
+          MAX_STEPS: ${{ inputs.max_steps }}
+        run: |
+          USER_DATA_FILE="$(mktemp)"
+          bash scripts/aws/render-user-data.sh > "${USER_DATA_FILE}"
+
+          RUN_ARGS=(
+            --launch-template "LaunchTemplateId=${{ steps.infra.outputs.launch_template_id }}"
+            --subnet-id "${{ steps.infra.outputs.subnet_id }}"
+            --iam-instance-profile "Name=${{ steps.infra.outputs.instance_profile }}"
+            --user-data "file://${USER_DATA_FILE}"
+            --tag-specifications "ResourceType=instance,Tags=[{Key=Release,Value=${RELEASE_TAG}},{Key=Project,Value=${PROJECT_NAME}},{Key=ManagedBy,Value=github-actions}]"
+            --count 1
+          )
+
+          if [ "${{ steps.infra.outputs.assign_public_ip }}" = "true" ]; then
+            RUN_ARGS+=(--associate-public-ip-address)
+          else
+            RUN_ARGS+=(--no-associate-public-ip-address)
+          fi
+
+          INSTANCE_ID="$(aws ec2 run-instances "${RUN_ARGS[@]}" --query 'Instances[0].InstanceId' --output text)"
+          echo "Launched training worker: ${INSTANCE_ID}"
+          echo "Release: ${RELEASE_TAG}"
+          echo "Checkpoints will sync to s3://${TRAINING_BUCKET}/checkpoints/${RELEASE_TAG}/"

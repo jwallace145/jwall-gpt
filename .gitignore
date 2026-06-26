@@ -17,3 +17,21 @@ wheels/
 htmlcov/
 .ruff_cache/
 .pytest_cache/
+
+# IDE
+.idea/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+infra/terraform.tfvars
+infra/backend.tf
+infra/plan.txt
+infra/plan-show.txt
+infra/tfplan

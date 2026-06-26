@@ -1,8 +1,9 @@
 # jwall-gpt
 
-[![Release](https://github.com/jimmymwallace/jwall-gpt/actions/workflows/release.yml/badge.svg)](https://github.com/jimmymwallace/jwall-gpt/actions/workflows/release.yml)
-[![GitHub release](https://img.shields.io/github/v/release/jimmymwallace/jwall-gpt)](https://github.com/jimmymwallace/jwall-gpt/releases)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/jwallace145/jwall-gpt/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jwallace145/jwall-gpt/actions/workflows/ci.yml)
+[![Release](https://github.com/jwallace145/jwall-gpt/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/jwallace145/jwall-gpt/actions/workflows/release.yml)
+[![GitHub release](https://img.shields.io/github/v/release/jwallace145/jwall-gpt?display_name=tag&sort=semver)](https://github.com/jwallace145/jwall-gpt/releases/latest)
+[![License](https://img.shields.io/github/license/jwallace145/jwall-gpt)](https://github.com/jwallace145/jwall-gpt/blob/main/LICENSE)
 
 Build, train, and scale a GPT from scratch in PyTorch — an educational hobby project.
 
@@ -28,6 +29,12 @@ uv run pytest
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for commit conventions, quality gates, and the release process.
+
+## AWS training pipeline
+
+GPU training workers are provisioned with Terraform under [`infra/`](infra/). Launch a run from **Actions → Train** (defaults to the latest release tag).
+
+See [infra/README.md](infra/README.md) for bootstrap, OIDC setup, and `terraform.tfvars` options.
 
 ## License
 
