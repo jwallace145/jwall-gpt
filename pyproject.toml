@@ -1,6 +1,6 @@
 [project]
 name = "jwall-gpt"
-version = "0.1.0"
+version = "0.1.1"
 description = "Educational GPT built from scratch in PyTorch"
 readme = "README.md"
 license = "MIT"

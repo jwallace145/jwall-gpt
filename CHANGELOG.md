@@ -9,6 +9,14 @@ This file is maintained by [python-semantic-release](https://python-semantic-rel
 
 <!-- version list -->
 
+## v0.1.1 (2026-06-26)
+
+### Bug Fixes
+
+- Configure PSR changelog insertion flag and backfill v0.1.0
+  ([`9cbc59c`](https://github.com/jwallace145/jwall-gpt/commit/9cbc59cdb96c7ec03ba223e9de101d239b37a877))
+
+
 ## v0.1.0 (2026-06-26)
 
 _This release is published under the MIT License._
