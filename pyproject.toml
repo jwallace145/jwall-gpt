@@ -1,0 +1,81 @@
+[project]
+name = "jwall-gpt"
+version = "0.0.0"
+description = "Educational GPT built from scratch in PyTorch"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "James Wallace", email = "jimmy.wallace145@gmail.com" },
+]
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=2.4.6",
+    "tiktoken>=0.13.0",
+    "torch>=2.12.1",
+]
+
+[project.scripts]
+jwall-gpt-train = "jwall_gpt.train:main"
+jwall-gpt-sample = "jwall_gpt.sample:main"
+
+[build-system]
+requires = ["uv_build>=0.11.15,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "commitizen>=4.16.4",
+    "pre-commit>=4.6.0",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "python-semantic-release>=10.5.3",
+    "ruff>=0.15.20",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests", "scripts", "configs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["jwall_gpt"]
+omit = [
+    "*/tests/*",
+    "*/jwall_gpt/train.py",
+    "*/jwall_gpt/sample.py",
+]
+
+[tool.coverage.report]
+fail_under = 80
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+commit_parser = "conventional"
+allow_zero_version = true
+tag_format = "v{version}"
+build_command = """
+uv lock --upgrade-package jwall-gpt
+git add uv.lock
+uv build
+"""
+
+[tool.semantic_release.changelog]
+changelog_file = "CHANGELOG.md"
+
+[tool.semantic_release.commit_parser_options]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]
+parse_squash_commits = true
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.0.0"
+tag_format = "v$version"
+version_files = ["pyproject.toml:project.version"]
