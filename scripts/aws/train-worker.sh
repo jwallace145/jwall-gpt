@@ -11,6 +11,7 @@ TOKENIZER="${TOKENIZER:-gpt2}"
 GITHUB_REPO="${GITHUB_REPO:-jwallace145/jwall-gpt}"
 PROJECT_NAME="${PROJECT_NAME:-jwall-gpt}"
 MAX_STEPS="${MAX_STEPS:-}"
+RUN_ID="${RUN_ID:-manual-$(date -u +%Y%m%dT%H%M%SZ)}"
 
 if [[ -z "${RELEASE_TAG}" || -z "${TRAINING_BUCKET}" || -z "${DATASETS_BUCKET}" ]]; then
   echo "RELEASE_TAG, TRAINING_BUCKET, and DATASETS_BUCKET are required"
@@ -51,10 +52,12 @@ if [[ -n "${MAX_STEPS}" ]]; then
 fi
 uv run jwall-gpt-train "${TRAIN_ARGS[@]}"
 
-CHECKPOINT_PREFIX="s3://${TRAINING_BUCKET}/checkpoints/${DATASET}/${RELEASE_TAG}"
+CONFIG_NAME="$(basename "${TRAINING_CONFIG}" .py)"
+RUN_DIR="${DATASET}/${CONFIG_NAME}/${RELEASE_TAG}/${RUN_ID}"
+CHECKPOINT_PREFIX="s3://${TRAINING_BUCKET}/checkpoints/${RUN_DIR}"
 aws s3 sync checkpoints/ "${CHECKPOINT_PREFIX}/"
 aws s3 cp "/var/log/${PROJECT_NAME}-training.log" \
-  "s3://${TRAINING_BUCKET}/logs/${DATASET}/${RELEASE_TAG}-$(date -u +%Y%m%dT%H%M%SZ).log"
+  "s3://${TRAINING_BUCKET}/logs/${RUN_DIR}.log"
 
 echo "Training complete. Checkpoints at ${CHECKPOINT_PREFIX}/. Shutting down."
 shutdown -h now

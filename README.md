@@ -56,11 +56,18 @@ GPU training workers are provisioned with Terraform under [`infra/`](infra/). La
 `max_steps` override. The worker pulls the tokenized dataset from the `jwall-gpt-datasets`
 bucket, trains, and uploads the result.
 
-The trained model lands at `s3://<training-bucket>/checkpoints/<dataset>/<release-tag>/latest.pt`.
-Download it and prompt the model locally:
+Each run writes to a unique, traceable path keyed by dataset, config, release tag, and the
+GitHub Actions run id, so reruns never overwrite each other:
+
+```text
+s3://<training-bucket>/checkpoints/<dataset>/<config>/<release-tag>/<run-id>/latest.pt
+```
+
+The exact path is printed in the **Train** workflow logs. Download it and prompt the model
+locally:
 
 ```bash
-aws s3 cp s3://jwall-gpt-training/checkpoints/tinystories/v0.7.0/latest.pt checkpoints/latest.pt
+aws s3 cp s3://jwall-gpt-training/checkpoints/tinystories/small/v0.7.0/1234567890-1/latest.pt checkpoints/latest.pt
 uv run jwall-gpt-sample --checkpoint checkpoints/latest.pt --prompt "Once upon a time"
 ```
 

@@ -97,6 +97,7 @@ jobs:
           TOKENIZER: ${{ inputs.tokenizer }}
           GITHUB_REPO: ${{ github.repository }}
           MAX_STEPS: ${{ inputs.max_steps }}
+          RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
         run: |
           USER_DATA_FILE="$(mktemp)"
           bash scripts/aws/render-user-data.sh > "${USER_DATA_FILE}"
@@ -117,7 +118,8 @@ jobs:
           fi
 
           INSTANCE_ID="$(aws ec2 run-instances "${RUN_ARGS[@]}" --query 'Instances[0].InstanceId' --output text)"
+          CONFIG_NAME="$(basename "${TRAINING_CONFIG}" .py)"
           echo "Launched training worker: ${INSTANCE_ID}"
           echo "Release: ${RELEASE_TAG}"
           echo "Dataset: ${DATASET} (${TOKENIZER})"
-          echo "Checkpoints will sync to s3://${TRAINING_BUCKET}/checkpoints/${DATASET}/${RELEASE_TAG}/"
+          echo "Checkpoints will sync to s3://${TRAINING_BUCKET}/checkpoints/${DATASET}/${CONFIG_NAME}/${RELEASE_TAG}/${RUN_ID}/"
