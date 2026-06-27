@@ -47,7 +47,7 @@ Edit [`terraform.tfvars`](terraform.tfvars) (committed) or copy from [`terraform
 
 ### 2. Initial apply (local credentials)
 
-Requires **Terraform >= 1.9** (S3 native lockfiles).
+Requires **Terraform >= 1.11** (S3 native lockfiles via `use_lockfile`).
 
 ```bash
 cd infra
