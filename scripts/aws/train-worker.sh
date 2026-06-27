@@ -5,18 +5,22 @@ set -euo pipefail
 RELEASE_TAG="${RELEASE_TAG}"
 TRAINING_CONFIG="${TRAINING_CONFIG:-configs/tiny.py}"
 TRAINING_BUCKET="${TRAINING_BUCKET}"
+DATASETS_BUCKET="${DATASETS_BUCKET}"
+DATASET="${DATASET:-tinystories}"
+TOKENIZER="${TOKENIZER:-gpt2}"
 GITHUB_REPO="${GITHUB_REPO:-jwallace145/jwall-gpt}"
 PROJECT_NAME="${PROJECT_NAME:-jwall-gpt}"
 MAX_STEPS="${MAX_STEPS:-}"
 
-if [[ -z "${RELEASE_TAG}" || -z "${TRAINING_BUCKET}" ]]; then
-  echo "RELEASE_TAG and TRAINING_BUCKET are required"
+if [[ -z "${RELEASE_TAG}" || -z "${TRAINING_BUCKET}" || -z "${DATASETS_BUCKET}" ]]; then
+  echo "RELEASE_TAG, TRAINING_BUCKET, and DATASETS_BUCKET are required"
   exit 1
 fi
 
 exec > >(tee "/var/log/${PROJECT_NAME}-training.log") 2>&1
 echo "Starting ${PROJECT_NAME} training worker"
 echo "Release: ${RELEASE_TAG}"
+echo "Dataset: ${DATASET} (${TOKENIZER})"
 echo "Config: ${TRAINING_CONFIG}"
 
 export DEBIAN_FRONTEND=noninteractive
@@ -36,27 +40,21 @@ cd "${WORK_DIR}"
 uv sync --frozen
 
 mkdir -p data checkpoints
-aws s3 sync "s3://${TRAINING_BUCKET}/data/" data/ || true
+DATA_PREFIX="s3://${DATASETS_BUCKET}/${DATASET}/${TOKENIZER}"
+echo "Downloading tokenized dataset from ${DATA_PREFIX}"
+aws s3 cp "${DATA_PREFIX}/train.bin" data/train.bin
+aws s3 cp "${DATA_PREFIX}/val.bin" data/val.bin
 
-if [[ -f data/train.bin && -f data/val.bin ]]; then
-  echo "Using existing data/train.bin and data/val.bin from S3"
-else
-  uv run python scripts/preprocess.py \
-    --corpus scripts/corpora/tiny_shakespeare.txt \
-    --out data/train.bin
-  aws s3 cp data/train.bin "s3://${TRAINING_BUCKET}/data/train.bin"
-  aws s3 cp data/val.bin "s3://${TRAINING_BUCKET}/data/val.bin"
-fi
-
+TRAIN_ARGS=(--config "${TRAINING_CONFIG}")
 if [[ -n "${MAX_STEPS}" ]]; then
-  echo "max_steps override not yet implemented in train.py; ignoring MAX_STEPS=${MAX_STEPS}"
+  TRAIN_ARGS+=(--max-steps "${MAX_STEPS}")
 fi
+uv run jwall-gpt-train "${TRAIN_ARGS[@]}"
 
-uv run jwall-gpt-train --config "${TRAINING_CONFIG}"
-
-aws s3 sync checkpoints/ "s3://${TRAINING_BUCKET}/checkpoints/${RELEASE_TAG}/"
+CHECKPOINT_PREFIX="s3://${TRAINING_BUCKET}/checkpoints/${DATASET}/${RELEASE_TAG}"
+aws s3 sync checkpoints/ "${CHECKPOINT_PREFIX}/"
 aws s3 cp "/var/log/${PROJECT_NAME}-training.log" \
-  "s3://${TRAINING_BUCKET}/logs/${RELEASE_TAG}-$(date -u +%Y%m%dT%H%M%SZ).log"
+  "s3://${TRAINING_BUCKET}/logs/${DATASET}/${RELEASE_TAG}-$(date -u +%Y%m%dT%H%M%SZ).log"
 
-echo "Training complete. Shutting down."
+echo "Training complete. Checkpoints at ${CHECKPOINT_PREFIX}/. Shutting down."
 shutdown -h now
