@@ -47,10 +47,11 @@ Tiny (~10M) → Nano (~25–50M) → Small (~124M) → beyond as hardware and bu
 Terraform in [`infra/`](../infra/) provisions:
 
 - VPC (public or private subnet for trainers)
-- S3 buckets:
-  - `jwall-gpt-datasets` — tokenized datasets (durable, read-only inputs)
-  - `jwall-gpt-training` — run outputs (checkpoints, logs)
-  - `jwall-gpt-terraform-state` — Terraform state with S3 lockfiles
+- S3 buckets (with cost-saving lifecycle rules):
+  - `jwall-gpt-datasets` — tokenized datasets (durable inputs; expire only old versions)
+  - `jwall-gpt-training` — run outputs (checkpoints expire after 90d, logs after 30d)
+  - `jwall-gpt-terraform-state` — Terraform state with S3 lockfiles (trim old versions)
+  - All buckets abort incomplete multipart uploads after 7 days
 - GPU trainer launch template (on-demand by default; optional Spot)
 - GitHub OIDC IAM role for Actions
 - SSM Parameter Store entries for runtime IDs (not committed to git)

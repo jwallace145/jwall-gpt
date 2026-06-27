@@ -26,6 +26,13 @@ variable "aws_account" {
       spot_max_price      = optional(string, "")
       ami_id              = optional(string, "")
     })
+    storage = optional(object({
+      checkpoint_retention_days = optional(number, 90)
+      log_retention_days        = optional(number, 30)
+      dataset_noncurrent_days   = optional(number, 30)
+      state_noncurrent_days     = optional(number, 90)
+      abort_multipart_days      = optional(number, 7)
+    }), {})
     tags = optional(map(string), {})
   })
   description = "AWS region, networking, trainer compute, and resource tags."

@@ -128,6 +128,11 @@ Checkpoints path: `s3://<training-bucket>/checkpoints/<dataset>/<tag>/` (the tra
 | `aws_account.training_compute` | `use_spot_instances` | Optional; default `false` (on-demand). Set `true` for Spot when scaling |
 | `aws_account.training_compute` | `spot_max_price` | Optional spot bid cap when `use_spot_instances = true` |
 | `aws_account.training_compute` | `root_volume_size_gb` | EBS root volume size |
+| `aws_account.storage` | `checkpoint_retention_days` | Expire checkpoints after N days (default 90) |
+| `aws_account.storage` | `log_retention_days` | Expire training logs after N days (default 30) |
+| `aws_account.storage` | `dataset_noncurrent_days` | Expire superseded dataset versions (default 30) |
+| `aws_account.storage` | `state_noncurrent_days` | Expire superseded Terraform state versions (default 90) |
+| `aws_account.storage` | `abort_multipart_days` | Abort incomplete multipart uploads (default 7) |
 
 ## Networking modes
 
