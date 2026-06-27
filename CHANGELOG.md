@@ -9,6 +9,15 @@ This file is maintained by [python-semantic-release](https://python-semantic-rel
 
 <!-- version list -->
 
+## v0.9.0 (2026-06-27)
+
+### Features
+
+- Add S3 lifecycle retention policies to control storage cost
+  ([#8](https://github.com/jwallace145/jwall-gpt/pull/8),
+  [`a64cff5`](https://github.com/jwallace145/jwall-gpt/commit/a64cff59974ecc9c95fdebdb2429d9688b110e55))
+
+
 ## v0.8.0 (2026-06-27)
 
 ### Features
