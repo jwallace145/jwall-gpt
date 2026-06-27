@@ -9,6 +9,15 @@ This file is maintained by [python-semantic-release](https://python-semantic-rel
 
 <!-- version list -->
 
+## v0.5.0 (2026-06-27)
+
+### Features
+
+- Add train/val split and report validation loss during training
+  ([#4](https://github.com/jwallace145/jwall-gpt/pull/4),
+  [`cc1f4bb`](https://github.com/jwallace145/jwall-gpt/commit/cc1f4bb13e00168bc599d58b26625d42b2c40935))
+
+
 ## v0.4.0 (2026-06-27)
 
 ### Features
