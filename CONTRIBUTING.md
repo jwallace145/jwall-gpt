@@ -90,7 +90,7 @@ docs: expand training loop README section
 4. Wait for CI to pass
 5. Squash merge to `main`
 
-Pull requests that change `infra/**` also trigger a **Terraform Plan** workflow that comments the plan on the PR. Review infrastructure changes before merging.
+Pull requests that change `infra/**` also trigger a **Terraform Plan** workflow that comments the plan on the PR. Review infrastructure changes before merging. After merge, **Terraform Apply** updates AWS automatically when `infra/` changes land on `main`.
 
 ## AWS infrastructure
 
