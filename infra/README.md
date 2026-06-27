@@ -84,18 +84,25 @@ In **Settings → Secrets and variables → Actions → Variables**, set:
 | `AWS_REGION` | `us-east-1` |
 | `TF_STATE_BUCKET` | `jwall-gpt-terraform-state` |
 
-After this, pull requests that touch `infra/**` will run `terraform plan` and post the result as a PR comment. When those changes merge to `main`, the **Terraform Apply** workflow runs `terraform apply` automatically (path-filtered — only when `infra/**` changes).
+After this, pull requests that touch `infra/**` will run `terraform plan` and post the result as a PR comment. When those changes merge to `main`, the **Terraform Apply** workflow runs `terraform apply` (path-filtered — only when `infra/**` changes), after **infrastructure** environment approval.
+
+### One-time: create GitHub environments
+
+Create both environments under **Settings → Environments → New environment**. Names must match the workflows exactly.
+
+| Environment | Workflow | Purpose |
+|-------------|----------|---------|
+| **`infrastructure`** | Terraform Apply | Approve `terraform apply` after infra merges to `main` |
+| **`training`** | Train | Approve GPU worker launches and AWS spend |
+
+For each environment:
+
+1. Enable **Required reviewers** and add yourself
+2. Save
+
+The **Terraform Apply** `apply` job waits for approval before assuming AWS credentials or changing infrastructure. The **Train** `launch-trainer` job waits before launching EC2.
 
 ## Launch a training run
-
-### One-time: create the `training` environment
-
-1. Open **Settings → Environments → New environment**
-2. Name it **`training`** (must match the workflow)
-3. Enable **Required reviewers** and add yourself
-4. Save
-
-The `launch-trainer` job waits for approval before assuming AWS credentials or starting EC2.
 
 ### Run training
 

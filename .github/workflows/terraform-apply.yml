@@ -17,8 +17,23 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  apply:
+  prepare:
     runs-on: ubuntu-latest
+    steps:
+      - name: Summarize apply run
+        run: |
+          {
+            echo "## Terraform apply plan"
+            echo "- Commit: \`${{ github.sha }}\`"
+            echo "- Ref: \`${{ github.ref_name }}\`"
+            echo ""
+            echo "Waiting for **infrastructure** environment approval before running \`terraform apply\`."
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+  apply:
+    needs: prepare
+    runs-on: ubuntu-latest
+    environment: infrastructure
     defaults:
       run:
         working-directory: infra
