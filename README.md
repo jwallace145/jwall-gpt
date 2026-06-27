@@ -30,6 +30,24 @@ uv run pytest
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for commit conventions, quality gates, and the release process.
 
+## Datasets
+
+Tiny Shakespeare (`scripts/preprocess.py`) is the built-in smoke-test corpus. For larger
+training runs, `scripts/prepare_dataset.py` downloads a Hugging Face dataset, tokenizes it
+with GPT-2 BPE, and writes `train.bin` / `val.bin`. It needs the optional `data` dependency
+group:
+
+```bash
+# Tokenize TinyStories and upload to s3://jwall-gpt-datasets/tinystories/gpt2/
+uv run --group data python scripts/prepare_dataset.py --dataset tinystories --upload
+```
+
+Registered datasets live in [`src/jwall_gpt/data/datasets.py`](src/jwall_gpt/data/datasets.py)
+(currently `tinystories`, `wikitext103`). Tokenized shards are stored durably in the
+`jwall-gpt-datasets` S3 bucket under `<dataset>/<tokenizer>/`, and GPU trainers read them
+back at run time. Tokenization runs locally for now; a dedicated AWS job is planned for very
+large datasets.
+
 ## AWS training pipeline
 
 GPU training workers are provisioned with Terraform under [`infra/`](infra/). Launch a run from **Actions → Train** (requires **`training` environment approval** before AWS spend).
