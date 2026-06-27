@@ -60,4 +60,4 @@ GitHub workflows:
 
 - **Terraform Plan** — posts `terraform plan` on PRs touching `infra/`
 - **Terraform Apply** — runs `terraform apply` on push to `main` when `infra/` changes
-- **Train** — `workflow_dispatch` to launch a worker; pulls the chosen tokenized dataset from the datasets bucket, trains, and writes checkpoints to `checkpoints/<dataset>/<tag>/`. Requires **`training` environment approval** before AWS resources are created
+- **Train** — `workflow_dispatch` to launch a worker; pulls the chosen tokenized dataset from the datasets bucket, trains, and writes checkpoints to `checkpoints/<tag>/<config>/<dataset>/<run-id>/` (run-id is the GitHub Actions `run_id-run_attempt`, so each run is isolated and traceable). Each run also drops a `run.json` metadata/metrics file alongside the checkpoint for post-run analysis. Requires **`training` environment approval** before AWS resources are created
