@@ -6,9 +6,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
+from torch.utils.data import DataLoader
 
 from jwall_gpt.data.dataset import MemmapDataset
+from jwall_gpt.data.prepare import split_tokens
 from jwall_gpt.model.gpt import GPT
+from jwall_gpt.train import estimate_loss
 from jwall_gpt.utils.checkpoint import load_checkpoint, save_checkpoint
 from jwall_gpt.utils.config import GPTConfig
 
@@ -80,6 +83,48 @@ def test_memmap_dataset() -> None:
         assert x.shape == (8,)
         assert y.shape == (8,)
         assert y[0].item() == x[1].item()
+
+
+def test_split_tokens_holds_out_tail() -> None:
+    tokens = np.arange(100, dtype=np.uint16)
+    train, val = split_tokens(tokens, val_frac=0.1)
+    assert len(train) == 90
+    assert len(val) == 10
+    assert train[0] == 0
+    assert val[0] == 90
+    assert val.dtype == tokens.dtype
+
+
+def test_split_tokens_zero_frac_yields_empty_val() -> None:
+    tokens = np.arange(50, dtype=np.uint16)
+    train, val = split_tokens(tokens, val_frac=0.0)
+    assert len(train) == 50
+    assert len(val) == 0
+    assert val.dtype == tokens.dtype
+
+
+@pytest.mark.parametrize("val_frac", [-0.1, 1.0, 1.5])
+def test_split_tokens_rejects_invalid_frac(val_frac: float) -> None:
+    tokens = np.arange(10, dtype=np.uint16)
+    with pytest.raises(ValueError, match="val_frac"):
+        split_tokens(tokens, val_frac=val_frac)
+
+
+def test_estimate_loss_returns_mean_and_restores_train_mode(tiny_config: GPTConfig) -> None:
+    tokens = np.arange(200, dtype=np.uint16) % tiny_config.vocab_size
+    with tempfile.TemporaryDirectory() as tmpdir:
+        path = Path(tmpdir) / "val.bin"
+        tokens.astype(np.uint16).tofile(path)
+        dataset = MemmapDataset(path, tiny_config.block_size)
+        loader = DataLoader(dataset, batch_size=2, shuffle=False, drop_last=True)
+
+        model = GPT(tiny_config)
+        model.train()
+        loss = estimate_loss(model, loader, torch.device("cpu"), eval_iters=3)
+
+        assert isinstance(loss, float)
+        assert loss > 0.0
+        assert model.training is True
 
 
 def test_checkpoint_roundtrip(tiny_config: GPTConfig) -> None:

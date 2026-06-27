@@ -38,13 +38,14 @@ uv sync --frozen
 mkdir -p data checkpoints
 aws s3 sync "s3://${TRAINING_BUCKET}/data/" data/ || true
 
-if [[ -f data/train.bin ]]; then
-  echo "Using existing data/train.bin from S3"
+if [[ -f data/train.bin && -f data/val.bin ]]; then
+  echo "Using existing data/train.bin and data/val.bin from S3"
 else
   uv run python scripts/preprocess.py \
     --corpus scripts/corpora/tiny_shakespeare.txt \
     --out data/train.bin
   aws s3 cp data/train.bin "s3://${TRAINING_BUCKET}/data/train.bin"
+  aws s3 cp data/val.bin "s3://${TRAINING_BUCKET}/data/val.bin"
 fi
 
 if [[ -n "${MAX_STEPS}" ]]; then

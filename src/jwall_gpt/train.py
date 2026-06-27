@@ -46,6 +46,27 @@ def get_device() -> torch.device:
     return torch.device("cpu")
 
 
+@torch.no_grad()
+def estimate_loss(model: GPT, loader: DataLoader, device: torch.device, eval_iters: int) -> float:
+    """Average the loss over up to ``eval_iters`` batches with the model in eval mode.
+
+    Restores training mode before returning so the caller can resume optimization.
+    """
+    was_training = model.training
+    model.eval()
+    losses: list[float] = []
+    for batch_idx, (x, y) in enumerate(loader):
+        if batch_idx >= eval_iters:
+            break
+        x = x.to(device)
+        y = y.to(device)
+        _, loss = model(x, y)
+        losses.append(loss.item())
+    if was_training:
+        model.train()
+    return sum(losses) / max(1, len(losses))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Train jwall-gpt")
     parser.add_argument("--config", type=Path, default=Path("configs/tiny.py"))
@@ -63,6 +84,19 @@ def main() -> None:
 
     dataset = MemmapDataset(data_path, model_config.block_size)
     loader = DataLoader(dataset, batch_size=cfg.batch_size, shuffle=True, drop_last=True)
+
+    val_loader: DataLoader | None = None
+    val_data_path_str = getattr(cfg, "val_data_path", None)
+    if val_data_path_str:
+        val_data_path = Path(val_data_path_str)
+        if val_data_path.exists():
+            val_dataset = MemmapDataset(val_data_path, model_config.block_size)
+            val_loader = DataLoader(
+                val_dataset, batch_size=cfg.batch_size, shuffle=True, drop_last=True
+            )
+        else:
+            print(f"No validation data at {val_data_path}; skipping eval loss.")
+    eval_iters = getattr(cfg, "eval_iters", 50)
 
     model = GPT(model_config).to(device)
     optimizer = torch.optim.AdamW(
@@ -106,7 +140,12 @@ def main() -> None:
             optimizer.step()
 
             if step % cfg.eval_interval == 0:
-                print(f"step {step}: loss {loss.item():.4f}, lr {lr:.2e}")
+                log = f"step {step}: train loss {loss.item():.4f}"
+                if val_loader is not None:
+                    val_loss = estimate_loss(model, val_loader, device, eval_iters)
+                    log += f", val loss {val_loss:.4f}"
+                log += f", lr {lr:.2e}"
+                print(log)
                 save_checkpoint(
                     checkpoint_dir / "latest.pt",
                     step=step,
