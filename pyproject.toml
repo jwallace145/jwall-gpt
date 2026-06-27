@@ -32,6 +32,11 @@ dev = [
     "python-semantic-release>=10.5.3",
     "ruff>=0.15.20",
 ]
+# Dataset preparation tooling. Not installed by default (keeps the training
+# runtime lean); use `uv run --group data ...` for scripts/prepare_dataset.py.
+data = [
+    "datasets>=3.0.0",
+]
 
 [tool.ruff]
 target-version = "py311"
