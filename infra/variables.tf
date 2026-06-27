@@ -15,9 +15,9 @@ variable "aws_account" {
   type = object({
     aws_region = string
     network = object({
-      vpc_cidr             = string
-      use_private_subnet   = bool
-      availability_zones   = optional(list(string), [])
+      vpc_cidr           = string
+      use_private_subnet = bool
+      availability_zones = optional(list(string), [])
     })
     training_compute = object({
       instance_type       = string
