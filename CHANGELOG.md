@@ -9,6 +9,15 @@ This file is maintained by [python-semantic-release](https://python-semantic-rel
 
 <!-- version list -->
 
+## v0.10.1 (2026-06-27)
+
+### Bug Fixes
+
+- Define trainer networking on the launch template network interface
+  ([#10](https://github.com/jwallace145/jwall-gpt/pull/10),
+  [`0aa2388`](https://github.com/jwallace145/jwall-gpt/commit/0aa2388dc75cc9541d5b63532f2fa307d0c39d7e))
+
+
 ## v0.10.0 (2026-06-27)
 
 ### Features
