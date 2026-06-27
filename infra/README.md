@@ -84,7 +84,7 @@ In **Settings → Secrets and variables → Actions → Variables**, set:
 | `AWS_REGION` | `us-east-1` |
 | `TF_STATE_BUCKET` | `jwall-gpt-terraform-state` |
 
-After this, pull requests that touch `infra/**` will run `terraform plan` and post the result as a PR comment.
+After this, pull requests that touch `infra/**` will run `terraform plan` and post the result as a PR comment. When those changes merge to `main`, the **Terraform Apply** workflow runs `terraform apply` automatically (path-filtered — only when `infra/**` changes).
 
 ## Launch a training run
 
