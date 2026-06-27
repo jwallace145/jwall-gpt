@@ -71,9 +71,17 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Train jwall-gpt")
     parser.add_argument("--config", type=Path, default=Path("configs/tiny.py"))
     parser.add_argument("--resume", type=Path, default=None)
+    parser.add_argument(
+        "--max-steps",
+        type=int,
+        default=None,
+        help="Override max_steps from the config (useful for longer cloud runs)",
+    )
     args = parser.parse_args()
 
     cfg = load_config_module(args.config)
+    if args.max_steps is not None:
+        cfg.max_steps = args.max_steps
     model_config: GPTConfig = cfg.config
     device = get_device()
 

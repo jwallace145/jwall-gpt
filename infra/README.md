@@ -101,14 +101,22 @@ The `launch-trainer` job waits for approval before assuming AWS credentials or s
 ### Run training
 
 1. Open **Actions → Train → Run workflow**
-2. Review the **prepare** job summary (release tag and config)
+2. Review the **prepare** job summary (release tag, dataset, config)
 3. Approve the pending **training** environment deployment
 4. Leave **release_tag** empty to use the latest GitHub Release (default)
-5. Optionally set `training_config` (default `configs/tiny.py`)
+5. Set inputs as needed:
+   - `dataset` — registered dataset key to train on (default `tinystories`)
+   - `tokenizer` — tokenizer the dataset was prepared with (default `gpt2`)
+   - `training_config` — model/training config (default `configs/tiny.py`; use `configs/nano.py` or `configs/small.py` for larger runs)
+   - `max_steps` — optional override of the config's step count for longer runs
 
-The workflow launches an on-demand GPU worker that clones the release, trains, uploads checkpoints to S3, and shuts down.
+The worker pulls the tokenized dataset from
+`s3://<datasets-bucket>/<dataset>/<tokenizer>/{train,val}.bin`, trains, uploads checkpoints to
+S3, and shuts down. Datasets must be prepared and uploaded first with
+`scripts/prepare_dataset.py` (see the repo README).
 
-Checkpoints path: `s3://<training-bucket>/checkpoints/<tag>/`
+Checkpoints path: `s3://<training-bucket>/checkpoints/<dataset>/<tag>/` (the trained model is
+`latest.pt`).
 
 ## Key variables (`terraform.tfvars`)
 

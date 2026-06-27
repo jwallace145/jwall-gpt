@@ -50,7 +50,19 @@ large datasets.
 
 ## AWS training pipeline
 
-GPU training workers are provisioned with Terraform under [`infra/`](infra/). Launch a run from **Actions → Train** (requires **`training` environment approval** before AWS spend).
+GPU training workers are provisioned with Terraform under [`infra/`](infra/). Launch a run from
+**Actions → Train** (requires **`training` environment approval** before AWS spend). Pick the
+`dataset` (e.g. `tinystories`), `training_config` (e.g. `configs/small.py`), and an optional
+`max_steps` override. The worker pulls the tokenized dataset from the `jwall-gpt-datasets`
+bucket, trains, and uploads the result.
+
+The trained model lands at `s3://<training-bucket>/checkpoints/<dataset>/<release-tag>/latest.pt`.
+Download it and prompt the model locally:
+
+```bash
+aws s3 cp s3://jwall-gpt-training/checkpoints/tinystories/v0.7.0/latest.pt checkpoints/latest.pt
+uv run jwall-gpt-sample --checkpoint checkpoints/latest.pt --prompt "Once upon a time"
+```
 
 See [infra/README.md](infra/README.md) for bootstrap, OIDC setup, and `terraform.tfvars` options.
 

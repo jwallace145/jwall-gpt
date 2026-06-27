@@ -12,8 +12,18 @@ on:
         required: false
         default: "configs/tiny.py"
         type: string
+      dataset:
+        description: "Registered dataset key to train on"
+        required: false
+        default: "tinystories"
+        type: string
+      tokenizer:
+        description: "Tokenizer the dataset was prepared with"
+        required: false
+        default: "gpt2"
+        type: string
       max_steps:
-        description: "Optional max training steps override (reserved)"
+        description: "Optional max training steps override"
         required: false
         type: string
 
@@ -41,7 +51,9 @@ jobs:
           {
             echo "## Training run plan"
             echo "- Release: \`${TAG}\`"
+            echo "- Dataset: \`${{ inputs.dataset }}\` (\`${{ inputs.tokenizer }}\`)"
             echo "- Config: \`${{ inputs.training_config }}\`"
+            echo "- Max steps override: \`${{ inputs.max_steps || 'config default' }}\`"
             echo ""
             echo "Waiting for **training** environment approval before launching AWS resources."
           } >> "${GITHUB_STEP_SUMMARY}"
@@ -70,6 +82,7 @@ jobs:
           echo "instance_profile=$(aws ssm get-parameter --name "/${PROJECT}/trainer-instance-profile" --query 'Parameter.Value' --output text)" >> "${GITHUB_OUTPUT}"
           echo "assign_public_ip=$(aws ssm get-parameter --name "/${PROJECT}/trainer-assign-public-ip" --query 'Parameter.Value' --output text)" >> "${GITHUB_OUTPUT}"
           echo "training_bucket=$(aws ssm get-parameter --name "/${PROJECT}/training-bucket" --query 'Parameter.Value' --output text)" >> "${GITHUB_OUTPUT}"
+          echo "datasets_bucket=$(aws ssm get-parameter --name "/${PROJECT}/datasets-bucket" --query 'Parameter.Value' --output text)" >> "${GITHUB_OUTPUT}"
 
       - name: Install gettext
         run: sudo apt-get update && sudo apt-get install -y gettext-base
@@ -79,6 +92,9 @@ jobs:
           RELEASE_TAG: ${{ needs.prepare.outputs.release_tag }}
           TRAINING_CONFIG: ${{ inputs.training_config }}
           TRAINING_BUCKET: ${{ steps.infra.outputs.training_bucket }}
+          DATASETS_BUCKET: ${{ steps.infra.outputs.datasets_bucket }}
+          DATASET: ${{ inputs.dataset }}
+          TOKENIZER: ${{ inputs.tokenizer }}
           GITHUB_REPO: ${{ github.repository }}
           MAX_STEPS: ${{ inputs.max_steps }}
         run: |
@@ -103,4 +119,5 @@ jobs:
           INSTANCE_ID="$(aws ec2 run-instances "${RUN_ARGS[@]}" --query 'Instances[0].InstanceId' --output text)"
           echo "Launched training worker: ${INSTANCE_ID}"
           echo "Release: ${RELEASE_TAG}"
-          echo "Checkpoints will sync to s3://${TRAINING_BUCKET}/checkpoints/${RELEASE_TAG}/"
+          echo "Dataset: ${DATASET} (${TOKENIZER})"
+          echo "Checkpoints will sync to s3://${TRAINING_BUCKET}/checkpoints/${DATASET}/${RELEASE_TAG}/"
