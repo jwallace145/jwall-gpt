@@ -95,7 +95,7 @@ resource "aws_iam_instance_profile" "trainer" {
 }
 
 resource "aws_launch_template" "trainer" {
-  name_prefix   = "${var.project_name}-trainer-"
+  name = "${var.project_name}-trainer"
   image_id      = local.ami_id
   instance_type = var.instance_type
 
@@ -153,9 +153,6 @@ resource "aws_launch_template" "trainer" {
     })
   }
 
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
 resource "aws_ssm_parameter" "launch_template_id" {
