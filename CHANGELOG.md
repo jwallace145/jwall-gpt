@@ -9,6 +9,15 @@ This file is maintained by [python-semantic-release](https://python-semantic-rel
 
 <!-- version list -->
 
+## v0.6.0 (2026-06-27)
+
+### Features
+
+- Add durable datasets S3 bucket with read-only trainer access
+  ([#5](https://github.com/jwallace145/jwall-gpt/pull/5),
+  [`2d32fef`](https://github.com/jwallace145/jwall-gpt/commit/2d32fefd9e7864217d9f84811c8a746bae87de40))
+
+
 ## v0.5.0 (2026-06-27)
 
 ### Features
