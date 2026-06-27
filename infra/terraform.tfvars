@@ -23,6 +23,16 @@ aws_account = {
     # ami_id             = "" # optional AMI override
   }
 
+  # S3 lifecycle retention (days). Outputs expire; durable inputs/state keep
+  # only their current version and trim old version history.
+  storage = {
+    checkpoint_retention_days = 90 # model checkpoints in the training bucket
+    log_retention_days        = 30 # training logs in the training bucket
+    dataset_noncurrent_days   = 30 # superseded dataset versions
+    state_noncurrent_days     = 90 # superseded Terraform state versions
+    abort_multipart_days      = 7  # abort incomplete multipart uploads
+  }
+
   tags = {
     Owner = "james-wallace"
   }

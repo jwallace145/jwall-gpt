@@ -28,8 +28,13 @@ locals {
 module "storage" {
   source = "./modules/storage"
 
-  project_name = var.project_name
-  tags         = local.common_tags
+  project_name              = var.project_name
+  checkpoint_retention_days = var.aws_account.storage.checkpoint_retention_days
+  log_retention_days        = var.aws_account.storage.log_retention_days
+  dataset_noncurrent_days   = var.aws_account.storage.dataset_noncurrent_days
+  state_noncurrent_days     = var.aws_account.storage.state_noncurrent_days
+  abort_multipart_days      = var.aws_account.storage.abort_multipart_days
+  tags                      = local.common_tags
 }
 
 module "vpc" {
