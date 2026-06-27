@@ -9,6 +9,20 @@ This file is maintained by [python-semantic-release](https://python-semantic-rel
 
 <!-- version list -->
 
+## v0.4.0 (2026-06-27)
+
+### Features
+
+- Apply Terraform automatically on infra changes to main
+  ([#3](https://github.com/jwallace145/jwall-gpt/pull/3),
+  [`be1cc26`](https://github.com/jwallace145/jwall-gpt/commit/be1cc2674da591d13f26b2d281c1f5f4ca740a99))
+
+### Refactoring
+
+- Default trainer instances to on-demand ([#2](https://github.com/jwallace145/jwall-gpt/pull/2),
+  [`8d79793`](https://github.com/jwallace145/jwall-gpt/commit/8d79793e6cbcafdbf54507c163a6cf4f7f509ce3))
+
+
 ## v0.3.0 (2026-06-27)
 
 ### Bug Fixes
