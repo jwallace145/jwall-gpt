@@ -13,7 +13,7 @@ Requires [uv](https://docs.astral.sh/uv/).
 
 ```bash
 uv sync
-uv run python scripts/preprocess.py --corpus scripts/corpora/tiny_shakespeare.txt --out data/train.bin
+uv run python scripts/preprocess.py --corpus scripts/corpora/tiny_shakespeare.txt --out data/train.bin  # also writes data/val.bin
 uv run jwall-gpt-train --config configs/tiny.py
 uv run jwall-gpt-sample --checkpoint checkpoints/latest.pt --prompt "ROMEO:"
 ```

@@ -30,6 +30,14 @@ Decoder-only transformer (GPT-2 style):
 - Loss: cross-entropy on next-token prediction
 - Gradient clipping: max norm 1.0
 
+## Data and evaluation
+
+- `scripts/preprocess.py` tokenizes the corpus (GPT-2 BPE) and writes a contiguous
+  train/val split (`data/train.bin`, `data/val.bin`; default `--val-frac 0.1`)
+- Every `eval_interval` steps, training reports held-out **validation loss** averaged
+  over `eval_iters` batches alongside train loss — the gap between the two is the
+  signal for under/overfitting
+
 ## Scaling path
 
 Tiny (~10M) → Nano (~25–50M) → Small (~124M) → beyond as hardware and budget allow.
