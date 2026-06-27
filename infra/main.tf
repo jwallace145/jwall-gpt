@@ -50,6 +50,7 @@ module "trainer" {
   subnet_id            = module.vpc.trainer_subnet_id
   training_bucket_name = module.storage.training_bucket_name
   training_bucket_arn  = module.storage.training_bucket_arn
+  datasets_bucket_arn  = module.storage.datasets_bucket_arn
   instance_type        = var.aws_account.training_compute.instance_type
   root_volume_size_gb  = var.aws_account.training_compute.root_volume_size_gb
   use_spot_instances   = var.aws_account.training_compute.use_spot_instances
@@ -76,6 +77,13 @@ resource "aws_ssm_parameter" "training_bucket" {
   name  = "/${var.project_name}/training-bucket"
   type  = "String"
   value = module.storage.training_bucket_name
+  tags  = local.common_tags
+}
+
+resource "aws_ssm_parameter" "datasets_bucket" {
+  name  = "/${var.project_name}/datasets-bucket"
+  type  = "String"
+  value = module.storage.datasets_bucket_name
   tags  = local.common_tags
 }
 

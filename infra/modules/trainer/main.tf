@@ -71,6 +71,19 @@ data "aws_iam_policy_document" "trainer" {
   }
 
   statement {
+    sid    = "DatasetsBucketReadOnly"
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:ListBucket",
+    ]
+    resources = [
+      var.datasets_bucket_arn,
+      "${var.datasets_bucket_arn}/*",
+    ]
+  }
+
+  statement {
     sid    = "CloudWatchLogs"
     effect = "Allow"
     actions = [
