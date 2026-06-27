@@ -9,6 +9,15 @@ This file is maintained by [python-semantic-release](https://python-semantic-rel
 
 <!-- version list -->
 
+## v0.7.0 (2026-06-27)
+
+### Features
+
+- Add prepare_dataset script for Hugging Face datasets
+  ([#6](https://github.com/jwallace145/jwall-gpt/pull/6),
+  [`0352caf`](https://github.com/jwallace145/jwall-gpt/commit/0352caf3658698c57164eb9a784daae387e76ca0))
+
+
 ## v0.6.0 (2026-06-27)
 
 ### Features
