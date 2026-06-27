@@ -9,6 +9,15 @@ This file is maintained by [python-semantic-release](https://python-semantic-rel
 
 <!-- version list -->
 
+## v0.8.0 (2026-06-27)
+
+### Features
+
+- Train from datasets bucket with dataset selection
+  ([#7](https://github.com/jwallace145/jwall-gpt/pull/7),
+  [`6fe9719`](https://github.com/jwallace145/jwall-gpt/commit/6fe97195e45033bfb0447cc8fafe1a0a5cc1e883))
+
+
 ## v0.7.0 (2026-06-27)
 
 ### Features
