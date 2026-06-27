@@ -105,7 +105,7 @@ The `launch-trainer` job waits for approval before assuming AWS credentials or s
 4. Leave **release_tag** empty to use the latest GitHub Release (default)
 5. Optionally set `training_config` (default `configs/tiny.py`)
 
-The workflow launches a spot GPU worker that clones the release, trains, uploads checkpoints to S3, and shuts down.
+The workflow launches an on-demand GPU worker that clones the release, trains, uploads checkpoints to S3, and shuts down.
 
 Checkpoints path: `s3://<training-bucket>/checkpoints/<tag>/`
 
@@ -116,8 +116,8 @@ Checkpoints path: `s3://<training-bucket>/checkpoints/<tag>/`
 | `github_details` | `github_org`, `github_repo` | OIDC trust policy and tagging |
 | `aws_account.network` | `use_private_subnet` | `false` = public subnet + public IP; `true` = private + NAT |
 | `aws_account.training_compute` | `instance_type` | GPU instance size (e.g. `g4dn.xlarge`) |
-| `aws_account.training_compute` | `use_spot_instances` | Use EC2 Spot for cost savings |
-| `aws_account.training_compute` | `spot_max_price` | Optional spot bid cap |
+| `aws_account.training_compute` | `use_spot_instances` | Optional; default `false` (on-demand). Set `true` for Spot when scaling |
+| `aws_account.training_compute` | `spot_max_price` | Optional spot bid cap when `use_spot_instances = true` |
 | `aws_account.training_compute` | `root_volume_size_gb` | EBS root volume size |
 
 ## Networking modes

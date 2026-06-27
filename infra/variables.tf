@@ -22,7 +22,7 @@ variable "aws_account" {
     training_compute = object({
       instance_type       = string
       root_volume_size_gb = number
-      use_spot_instances  = bool
+      use_spot_instances  = optional(bool, false)
       spot_max_price      = optional(string, "")
       ami_id              = optional(string, "")
     })

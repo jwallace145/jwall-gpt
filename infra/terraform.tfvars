@@ -20,8 +20,6 @@ aws_account = {
   training_compute = {
     instance_type       = "g4dn.xlarge"
     root_volume_size_gb = 100
-    use_spot_instances  = true
-    spot_max_price      = "" # e.g. "0.25" to cap spot price
     # ami_id             = "" # optional AMI override
   }
 
