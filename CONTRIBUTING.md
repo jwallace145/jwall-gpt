@@ -16,6 +16,15 @@ uv run ruff check
 uv run jwall-gpt-train --config configs/tiny.py
 ```
 
+### Tool versions
+
+| Tool | Pin | Notes |
+|------|-----|-------|
+| Python | [`.python-version`](.python-version) | Also `requires-python` in `pyproject.toml` |
+| Terraform | [`.terraform-version`](.terraform-version) | Used by CI and version managers (tfenv, asdf) |
+
+For Terraform work, install the pinned version (e.g. `tfenv install`) and run commands from [`infra/`](infra/).
+
 ## Pre-commit hooks
 
 Install all hook types once:

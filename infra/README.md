@@ -47,7 +47,7 @@ Edit [`terraform.tfvars`](terraform.tfvars) (committed) or copy from [`terraform
 
 ### 2. Initial apply (local credentials)
 
-Requires **Terraform >= 1.11** (S3 native lockfiles via `use_lockfile`).
+Requires **Terraform 1.11.0** — pinned in [`.terraform-version`](../.terraform-version) at the repo root (used by CI, [tfenv](https://github.com/tfutils/tfenv), and [asdf](https://asdf-vm.com/)). `infra/main.tf` enforces `>= 1.11.0` for S3 native lockfiles (`use_lockfile`).
 
 ```bash
 cd infra
