@@ -31,8 +31,9 @@ variable "root_volume_size_gb" {
 }
 
 variable "use_spot_instances" {
-  type    = bool
-  default = true
+  type        = bool
+  description = "Use EC2 Spot instances. Default is on-demand for predictable small-scale testing."
+  default     = false
 }
 
 variable "spot_max_price" {

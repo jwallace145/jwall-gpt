@@ -40,7 +40,7 @@ Terraform in [`infra/`](../infra/) provisions:
 
 - VPC (public or private subnet for trainers)
 - S3 buckets (training data, checkpoints, Terraform state with S3 lockfiles)
-- GPU trainer launch template (configurable instance type, Spot)
+- GPU trainer launch template (on-demand by default; optional Spot)
 - GitHub OIDC IAM role for Actions
 - SSM Parameter Store entries for runtime IDs (not committed to git)
 
