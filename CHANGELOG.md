@@ -9,6 +9,43 @@ This file is maintained by [python-semantic-release](https://python-semantic-rel
 
 <!-- version list -->
 
+## v0.3.0 (2026-06-27)
+
+### Bug Fixes
+
+- Use Terraform 1.11 for S3 native state locking
+  ([`b6b106c`](https://github.com/jwallace145/jwall-gpt/commit/b6b106cf56a57228d71f60b0642496f781747ce8))
+
+### Chores
+
+- Add pull request template
+  ([`a00b0ce`](https://github.com/jwallace145/jwall-gpt/commit/a00b0ce1ab17330fcec2478563c7a8c2a32d2c9f))
+
+- Pin Terraform version at repo root
+  ([`3531bc7`](https://github.com/jwallace145/jwall-gpt/commit/3531bc7a133578f7db9c852a3a7e29a21623c024))
+
+- Track Terraform backend.tf and terraform.tfvars in git
+  ([`ae4faeb`](https://github.com/jwallace145/jwall-gpt/commit/ae4faebc4789c5c55dc79dc1f60228ac37ace4b7))
+
+### Code Style
+
+- Run terraform fmt on infra files
+  ([`55ce7fa`](https://github.com/jwallace145/jwall-gpt/commit/55ce7fa44e647bfe2d9bcad7e4a05f33dad0b03f))
+
+### Features
+
+- Require training environment approval before AWS launches
+  ([`7a5ef14`](https://github.com/jwallace145/jwall-gpt/commit/7a5ef145d6bdb9c0a8ee3a78daf2de257455bcc7))
+
+### Refactoring
+
+- Nest Terraform variables to match tfvars interface
+  ([`fae5113`](https://github.com/jwallace145/jwall-gpt/commit/fae5113b5ffc5517adf0da711cf30d26fa58369c))
+
+- Use fixed name for trainer launch template
+  ([`d1c4179`](https://github.com/jwallace145/jwall-gpt/commit/d1c4179911b4c86bf50ca197106779cf62f9e7df))
+
+
 ## v0.2.0 (2026-06-26)
 
 ### Features
