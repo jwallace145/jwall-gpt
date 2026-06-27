@@ -2,6 +2,10 @@ output "training_bucket_name" {
   value = module.storage.training_bucket_name
 }
 
+output "datasets_bucket_name" {
+  value = module.storage.datasets_bucket_name
+}
+
 output "terraform_state_bucket_name" {
   value = module.storage.terraform_state_bucket_name
 }

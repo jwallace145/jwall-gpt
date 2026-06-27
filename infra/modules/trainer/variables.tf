@@ -19,6 +19,11 @@ variable "training_bucket_arn" {
   type = string
 }
 
+variable "datasets_bucket_arn" {
+  type        = string
+  description = "ARN of the read-only datasets bucket for tokenized training data."
+}
+
 variable "instance_type" {
   type        = string
   description = "EC2 instance type for GPU training."

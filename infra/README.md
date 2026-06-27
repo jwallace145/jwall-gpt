@@ -20,7 +20,7 @@ GitHub Actions (OIDC)
 | Module | Purpose |
 |--------|---------|
 | [`modules/vpc`](modules/vpc) | VPC, public/private subnets, IGW, optional NAT + S3 endpoint |
-| [`modules/storage`](modules/storage) | Training + Terraform state S3 buckets |
+| [`modules/storage`](modules/storage) | Training, datasets, and Terraform state S3 buckets |
 | [`modules/trainer`](modules/trainer) | GPU launch template, instance profile, security group, SSM parameters |
 | [`modules/github_oidc`](modules/github_oidc) | GitHub OIDC provider + IAM role for Actions |
 
@@ -34,7 +34,8 @@ Terraform writes AWS resource IDs to **SSM Parameter Store** under `/${project_n
 | `/jwall-gpt/trainer-subnet-id` | Subnet for worker instances |
 | `/jwall-gpt/trainer-instance-profile` | IAM instance profile name |
 | `/jwall-gpt/trainer-assign-public-ip` | Whether to assign a public IP |
-| `/jwall-gpt/training-bucket` | S3 bucket for data and checkpoints |
+| `/jwall-gpt/training-bucket` | S3 bucket for run outputs (checkpoints, logs) |
+| `/jwall-gpt/datasets-bucket` | S3 bucket for tokenized datasets (read-only inputs) |
 | `/jwall-gpt/github-actions-role-arn` | OIDC role ARN (reference) |
 | `/jwall-gpt/aws-region` | Deployed AWS region |
 | `/jwall-gpt/terraform-state-bucket` | Terraform state bucket name |
