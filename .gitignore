@@ -30,8 +30,6 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
-infra/terraform.tfvars
-infra/backend.tf
 infra/plan.txt
 infra/plan-show.txt
 infra/tfplan

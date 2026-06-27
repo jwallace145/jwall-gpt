@@ -43,14 +43,11 @@ Terraform writes AWS resource IDs to **SSM Parameter Store** under `/${project_n
 
 ### 1. Configure variables
 
-```bash
-cp terraform.tfvars.example terraform.tfvars
-# Edit github_org, instance_type, use_private_subnet, etc.
-```
+Edit [`terraform.tfvars`](terraform.tfvars) (committed) or copy from [`terraform.tfvars.example`](terraform.tfvars.example) if starting fresh.
 
 ### 2. Initial apply (local credentials)
 
-Requires **Terraform >= 1.9** (S3 native lockfiles).
+Requires **Terraform 1.11.0** — pinned in [`.terraform-version`](../.terraform-version) at the repo root (used by CI, [tfenv](https://github.com/tfutils/tfenv), and [asdf](https://asdf-vm.com/)). `infra/main.tf` enforces `>= 1.11.0` for S3 native lockfiles (`use_lockfile`).
 
 ```bash
 cd infra
@@ -67,8 +64,9 @@ Note the outputs:
 
 ### 3. Enable remote state
 
+[`backend.tf`](backend.tf) is committed with the S3 backend config. If migrating from local state for the first time:
+
 ```bash
-cp backend.tf.example backend.tf
 terraform init -migrate-state
 ```
 
@@ -90,9 +88,22 @@ After this, pull requests that touch `infra/**` will run `terraform plan` and po
 
 ## Launch a training run
 
+### One-time: create the `training` environment
+
+1. Open **Settings → Environments → New environment**
+2. Name it **`training`** (must match the workflow)
+3. Enable **Required reviewers** and add yourself
+4. Save
+
+The `launch-trainer` job waits for approval before assuming AWS credentials or starting EC2.
+
+### Run training
+
 1. Open **Actions → Train → Run workflow**
-2. Leave **release_tag** empty to use the latest GitHub Release (default)
-3. Optionally set `training_config` (default `configs/tiny.py`)
+2. Review the **prepare** job summary (release tag and config)
+3. Approve the pending **training** environment deployment
+4. Leave **release_tag** empty to use the latest GitHub Release (default)
+5. Optionally set `training_config` (default `configs/tiny.py`)
 
 The workflow launches a spot GPU worker that clones the release, trains, uploads checkpoints to S3, and shuts down.
 
@@ -100,13 +111,14 @@ Checkpoints path: `s3://<training-bucket>/checkpoints/<tag>/`
 
 ## Key variables (`terraform.tfvars`)
 
-| Variable | Description |
-|----------|-------------|
-| `use_private_subnet` | `false` = public subnet + public IP; `true` = private subnet + NAT |
-| `instance_type` | GPU instance size (e.g. `g4dn.xlarge`, `g5.xlarge`) |
-| `use_spot_instances` | Use EC2 Spot for cost savings |
-| `spot_max_price` | Optional spot bid cap |
-| `root_volume_size_gb` | EBS root volume size |
+| Block | Field | Description |
+|-------|-------|-------------|
+| `github_details` | `github_org`, `github_repo` | OIDC trust policy and tagging |
+| `aws_account.network` | `use_private_subnet` | `false` = public subnet + public IP; `true` = private + NAT |
+| `aws_account.training_compute` | `instance_type` | GPU instance size (e.g. `g4dn.xlarge`) |
+| `aws_account.training_compute` | `use_spot_instances` | Use EC2 Spot for cost savings |
+| `aws_account.training_compute` | `spot_max_price` | Optional spot bid cap |
+| `aws_account.training_compute` | `root_volume_size_gb` | EBS root volume size |
 
 ## Networking modes
 
@@ -117,6 +129,7 @@ Checkpoints path: `s3://<training-bucket>/checkpoints/<tag>/`
 ## Security
 
 - GitHub Actions assumes an IAM role via OIDC (no long-lived AWS keys in GitHub)
+- The **Train** workflow requires manual approval via the **`training`** environment before any AWS spend
 - Trainer instances use a dedicated instance profile (S3 + CloudWatch only)
 - State and training buckets block public access and use SSE-S3
 

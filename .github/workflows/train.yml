@@ -22,13 +22,11 @@ permissions:
   contents: read
 
 jobs:
-  launch-trainer:
+  prepare:
     runs-on: ubuntu-latest
-    env:
-      PROJECT_NAME: jwall-gpt
+    outputs:
+      release_tag: ${{ steps.release.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
-
       - name: Resolve release tag
         id: release
         env:
@@ -40,7 +38,22 @@ jobs:
             TAG="$(gh release view --repo "${GITHUB_REPOSITORY}" --json tagName -q .tagName)"
           fi
           echo "tag=${TAG}" >> "${GITHUB_OUTPUT}"
-          echo "Training release: ${TAG}"
+          {
+            echo "## Training run plan"
+            echo "- Release: \`${TAG}\`"
+            echo "- Config: \`${{ inputs.training_config }}\`"
+            echo ""
+            echo "Waiting for **training** environment approval before launching AWS resources."
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+  launch-trainer:
+    needs: prepare
+    runs-on: ubuntu-latest
+    environment: training
+    env:
+      PROJECT_NAME: jwall-gpt
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -63,7 +76,7 @@ jobs:
 
       - name: Launch training worker
         env:
-          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_TAG: ${{ needs.prepare.outputs.release_tag }}
           TRAINING_CONFIG: ${{ inputs.training_config }}
           TRAINING_BUCKET: ${{ steps.infra.outputs.training_bucket }}
           GITHUB_REPO: ${{ github.repository }}
