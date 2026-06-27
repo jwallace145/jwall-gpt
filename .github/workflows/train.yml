@@ -87,9 +87,7 @@ jobs:
         run: |
           PROJECT="${PROJECT_NAME}"
           echo "launch_template_id=$(aws ssm get-parameter --name "/${PROJECT}/launch-template-id" --query 'Parameter.Value' --output text)" >> "${GITHUB_OUTPUT}"
-          echo "subnet_id=$(aws ssm get-parameter --name "/${PROJECT}/trainer-subnet-id" --query 'Parameter.Value' --output text)" >> "${GITHUB_OUTPUT}"
           echo "instance_profile=$(aws ssm get-parameter --name "/${PROJECT}/trainer-instance-profile" --query 'Parameter.Value' --output text)" >> "${GITHUB_OUTPUT}"
-          echo "assign_public_ip=$(aws ssm get-parameter --name "/${PROJECT}/trainer-assign-public-ip" --query 'Parameter.Value' --output text)" >> "${GITHUB_OUTPUT}"
           echo "training_bucket=$(aws ssm get-parameter --name "/${PROJECT}/training-bucket" --query 'Parameter.Value' --output text)" >> "${GITHUB_OUTPUT}"
           echo "datasets_bucket=$(aws ssm get-parameter --name "/${PROJECT}/datasets-bucket" --query 'Parameter.Value' --output text)" >> "${GITHUB_OUTPUT}"
 
@@ -111,20 +109,17 @@ jobs:
           USER_DATA_FILE="$(mktemp)"
           bash scripts/aws/render-user-data.sh > "${USER_DATA_FILE}"
 
+          # Subnet, security group, and public-IP assignment are baked into the
+          # launch template's primary network interface, so they must not be
+          # passed here (instance-level networking conflicts with the template's
+          # network interface).
           RUN_ARGS=(
             --launch-template "LaunchTemplateId=${{ steps.infra.outputs.launch_template_id }}"
-            --subnet-id "${{ steps.infra.outputs.subnet_id }}"
             --iam-instance-profile "Name=${{ steps.infra.outputs.instance_profile }}"
             --user-data "file://${USER_DATA_FILE}"
             --tag-specifications "ResourceType=instance,Tags=[{Key=Release,Value=${RELEASE_TAG}},{Key=Project,Value=${PROJECT_NAME}},{Key=ManagedBy,Value=github-actions}]"
             --count 1
           )
-
-          if [ "${{ steps.infra.outputs.assign_public_ip }}" = "true" ]; then
-            RUN_ARGS+=(--associate-public-ip-address)
-          else
-            RUN_ARGS+=(--no-associate-public-ip-address)
-          fi
 
           INSTANCE_ID="$(aws ec2 run-instances "${RUN_ARGS[@]}" --query 'Instances[0].InstanceId' --output text)"
           CONFIG_NAME="$(basename "${TRAINING_CONFIG}" .py)"

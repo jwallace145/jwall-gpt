@@ -116,7 +116,17 @@ resource "aws_launch_template" "trainer" {
     name = aws_iam_instance_profile.trainer.name
   }
 
-  vpc_security_group_ids = [aws_security_group.trainer.id]
+  # Networking lives on the primary network interface (subnet, SG, public IP)
+  # rather than at the instance level, so run-instances does not need to pass
+  # --subnet-id / --associate-public-ip-address (which would conflict with an
+  # instance-level security group).
+  network_interfaces {
+    device_index                = 0
+    subnet_id                   = var.subnet_id
+    associate_public_ip_address = var.assign_public_ip
+    security_groups             = [aws_security_group.trainer.id]
+    delete_on_termination       = true
+  }
 
   block_device_mappings {
     device_name = "/dev/sda1"
