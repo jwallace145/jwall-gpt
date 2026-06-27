@@ -115,8 +115,9 @@ The worker pulls the tokenized dataset from
 S3, and shuts down. Datasets must be prepared and uploaded first with
 `scripts/prepare_dataset.py` (see the repo README).
 
-Checkpoints path: `s3://<training-bucket>/checkpoints/<dataset>/<tag>/` (the trained model is
-`latest.pt`).
+Checkpoints path: `s3://<training-bucket>/checkpoints/<tag>/<config>/<dataset>/<run-id>/` (the
+trained model is `latest.pt`, run metadata/metrics are in `run.json`; `<run-id>` is the GitHub
+Actions `run_id-run_attempt`).
 
 ## Key variables (`terraform.tfvars`)
 

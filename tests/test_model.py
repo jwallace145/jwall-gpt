@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from jwall_gpt.data.dataset import MemmapDataset
 from jwall_gpt.data.prepare import split_tokens
 from jwall_gpt.model.gpt import GPT
-from jwall_gpt.train import estimate_loss
+from jwall_gpt.train import collect_provenance, estimate_loss, summarize_metrics
 from jwall_gpt.utils.checkpoint import load_checkpoint, save_checkpoint
 from jwall_gpt.utils.config import GPTConfig
 
@@ -125,6 +125,53 @@ def test_estimate_loss_returns_mean_and_restores_train_mode(tiny_config: GPTConf
         assert isinstance(loss, float)
         assert loss > 0.0
         assert model.training is True
+
+
+def test_summarize_metrics_with_val_losses() -> None:
+    history = [
+        {"step": 0, "train_loss": 4.0, "val_loss": 4.2, "lr": 1e-4},
+        {"step": 100, "train_loss": 2.0, "val_loss": 2.1, "lr": 3e-4},
+        {"step": 200, "train_loss": 1.5, "val_loss": 2.5, "lr": 2e-4},
+    ]
+    summary = summarize_metrics(history)
+    assert summary["final_train_loss"] == 1.5
+    assert summary["final_val_loss"] == 2.5
+    assert summary["best_val_loss"] == 2.1
+    assert summary["best_val_step"] == 100
+
+
+def test_summarize_metrics_without_val_losses() -> None:
+    history = [
+        {"step": 0, "train_loss": 4.0, "val_loss": None, "lr": 1e-4},
+        {"step": 100, "train_loss": 2.0, "val_loss": None, "lr": 3e-4},
+    ]
+    summary = summarize_metrics(history)
+    assert summary["final_train_loss"] == 2.0
+    assert summary["final_val_loss"] is None
+    assert summary["best_val_loss"] is None
+    assert summary["best_val_step"] is None
+
+
+def test_summarize_metrics_empty_history() -> None:
+    summary = summarize_metrics([])
+    assert summary == {
+        "final_train_loss": None,
+        "final_val_loss": None,
+        "best_val_loss": None,
+        "best_val_step": None,
+    }
+
+
+def test_collect_provenance_reads_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("RELEASE_TAG", "v1.2.3")
+    monkeypatch.setenv("DATASET", "tinystories")
+    monkeypatch.delenv("TOKENIZER", raising=False)
+    monkeypatch.delenv("RUN_ID", raising=False)
+    provenance = collect_provenance()
+    assert provenance["release_tag"] == "v1.2.3"
+    assert provenance["dataset"] == "tinystories"
+    assert provenance["tokenizer"] is None
+    assert provenance["run_id"] is None
 
 
 def test_checkpoint_roundtrip(tiny_config: GPTConfig) -> None:

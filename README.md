@@ -1,6 +1,7 @@
 # jwall-gpt
 
 [![CI](https://github.com/jwallace145/jwall-gpt/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jwallace145/jwall-gpt/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/jwallace145/jwall-gpt/branch/main/graph/badge.svg)](https://codecov.io/gh/jwallace145/jwall-gpt)
 [![Release](https://github.com/jwallace145/jwall-gpt/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/jwallace145/jwall-gpt/actions/workflows/release.yml)
 [![GitHub release](https://img.shields.io/github/v/release/jwallace145/jwall-gpt?display_name=tag&sort=semver)](https://github.com/jwallace145/jwall-gpt/releases/latest)
 [![License](https://img.shields.io/github/license/jwallace145/jwall-gpt)](https://github.com/jwallace145/jwall-gpt/blob/main/LICENSE)
@@ -56,11 +57,15 @@ GPU training workers are provisioned with Terraform under [`infra/`](infra/). La
 `max_steps` override. The worker pulls the tokenized dataset from the `jwall-gpt-datasets`
 bucket, trains, and uploads the result.
 
-The trained model lands at `s3://<training-bucket>/checkpoints/<dataset>/<release-tag>/latest.pt`.
-Download it and prompt the model locally:
+The trained model lands at
+`s3://<training-bucket>/checkpoints/<release-tag>/<config>/<dataset>/<run-id>/latest.pt`,
+where `<run-id>` is the GitHub Actions `run_id-run_attempt` so every run is isolated. Each run
+also writes a `run.json` (config, hyperparameters, loss history, timings) next to the checkpoint
+for post-run analysis. List the runs, then download the one you want and prompt it locally:
 
 ```bash
-aws s3 cp s3://jwall-gpt-training/checkpoints/tinystories/v0.7.0/latest.pt checkpoints/latest.pt
+aws s3 ls s3://jwall-gpt-training/checkpoints/v0.7.0/tiny/tinystories/
+aws s3 cp s3://jwall-gpt-training/checkpoints/v0.7.0/tiny/tinystories/<run-id>/latest.pt checkpoints/latest.pt
 uv run jwall-gpt-sample --checkpoint checkpoints/latest.pt --prompt "Once upon a time"
 ```
 

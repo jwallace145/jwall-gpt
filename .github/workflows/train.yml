@@ -8,15 +8,24 @@ on:
         required: false
         type: string
       training_config:
-        description: "Training config path"
+        description: "Model/training config to use"
         required: false
         default: "configs/tiny.py"
-        type: string
+        # Keep in sync with configs/*.py
+        type: choice
+        options:
+          - configs/tiny.py
+          - configs/nano.py
+          - configs/small.py
       dataset:
         description: "Registered dataset key to train on"
         required: false
         default: "tinystories"
-        type: string
+        # Keep in sync with jwall_gpt.data.datasets.DATASETS
+        type: choice
+        options:
+          - tinystories
+          - wikitext103
       tokenizer:
         description: "Tokenizer the dataset was prepared with"
         required: false
@@ -97,6 +106,7 @@ jobs:
           TOKENIZER: ${{ inputs.tokenizer }}
           GITHUB_REPO: ${{ github.repository }}
           MAX_STEPS: ${{ inputs.max_steps }}
+          RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
         run: |
           USER_DATA_FILE="$(mktemp)"
           bash scripts/aws/render-user-data.sh > "${USER_DATA_FILE}"
@@ -117,7 +127,9 @@ jobs:
           fi
 
           INSTANCE_ID="$(aws ec2 run-instances "${RUN_ARGS[@]}" --query 'Instances[0].InstanceId' --output text)"
+          CONFIG_NAME="$(basename "${TRAINING_CONFIG}" .py)"
           echo "Launched training worker: ${INSTANCE_ID}"
           echo "Release: ${RELEASE_TAG}"
           echo "Dataset: ${DATASET} (${TOKENIZER})"
-          echo "Checkpoints will sync to s3://${TRAINING_BUCKET}/checkpoints/${DATASET}/${RELEASE_TAG}/"
+          echo "Run: ${RUN_ID}"
+          echo "Checkpoints will sync to s3://${TRAINING_BUCKET}/checkpoints/${RELEASE_TAG}/${CONFIG_NAME}/${DATASET}/${RUN_ID}/"
