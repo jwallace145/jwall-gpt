@@ -9,6 +9,15 @@ This file is maintained by [python-semantic-release](https://python-semantic-rel
 
 <!-- version list -->
 
+## v0.10.0 (2026-06-27)
+
+### Features
+
+- Add coverage badge, per-run checkpoint paths, and run.json metadata
+  ([#9](https://github.com/jwallace145/jwall-gpt/pull/9),
+  [`21962fd`](https://github.com/jwallace145/jwall-gpt/commit/21962fdd2fec8039896142eb5c3ea3bc51ac627d))
+
+
 ## v0.9.0 (2026-06-27)
 
 ### Features
