@@ -88,7 +88,7 @@ Pull requests that change `infra/**` also trigger a **Terraform Plan** workflow 
 Terraform lives in [`infra/`](../infra/). See [`infra/README.md`](../infra/README.md) for bootstrap and repository variable setup.
 
 - Use `terraform.tfvars` and `backend.tf` in `infra/` (committed; no secrets in these files)
-- Prefer changing trainer sizing via `instance_type`, `use_spot_instances`, and related variables in `terraform.tfvars`
+- Prefer changing trainer sizing via `aws_account.training_compute` in `terraform.tfvars`
 - GitHub Actions uses OIDC (`AWS_ROLE_ARN`) — do not add long-lived AWS access keys to the repository
 - AWS resource IDs are stored in SSM Parameter Store after `terraform apply`, not in the repo
 

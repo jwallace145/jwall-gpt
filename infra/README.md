@@ -111,13 +111,14 @@ Checkpoints path: `s3://<training-bucket>/checkpoints/<tag>/`
 
 ## Key variables (`terraform.tfvars`)
 
-| Variable | Description |
-|----------|-------------|
-| `use_private_subnet` | `false` = public subnet + public IP; `true` = private subnet + NAT |
-| `instance_type` | GPU instance size (e.g. `g4dn.xlarge`, `g5.xlarge`) |
-| `use_spot_instances` | Use EC2 Spot for cost savings |
-| `spot_max_price` | Optional spot bid cap |
-| `root_volume_size_gb` | EBS root volume size |
+| Block | Field | Description |
+|-------|-------|-------------|
+| `github_details` | `github_org`, `github_repo` | OIDC trust policy and tagging |
+| `aws_account.network` | `use_private_subnet` | `false` = public subnet + public IP; `true` = private + NAT |
+| `aws_account.training_compute` | `instance_type` | GPU instance size (e.g. `g4dn.xlarge`) |
+| `aws_account.training_compute` | `use_spot_instances` | Use EC2 Spot for cost savings |
+| `aws_account.training_compute` | `spot_max_price` | Optional spot bid cap |
+| `aws_account.training_compute` | `root_volume_size_gb` | EBS root volume size |
 
 ## Networking modes
 
